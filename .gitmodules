@@ -1,0 +1,3 @@
+[submodule "ComputationAwareKalman"]
+	path = ComputationAwareKalman
+	url = https://github.com/marvinpfoertner/ComputationAwareKalman.jl.git
