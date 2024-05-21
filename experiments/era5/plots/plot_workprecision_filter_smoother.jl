@@ -37,7 +37,6 @@ with_theme(T) do
     xticks_time = exp10.(range(0, stop=3))
     yticks_train_mse = LogTicks(range(-4, stop=2))
     yticks_test_mse = LogTicks(range(0, stop=2))
-    ylimits_test_mse = (10^(0 - 0.1), 10^(2 + 0.1))
     scatter_markersize = 8
 
     for (idx, dataset_train_or_test) in enumerate(["Train", "Test"])
@@ -154,17 +153,13 @@ with_theme(T) do
         hideydecorations!(ax_mse_smoother, grid=false)
         hideydecorations!(ax_nll_smoother, grid=false)
 
-        if dataset_train_or_test == "Test"
-            ylims!(ax_mse_filter, ylimits_test_mse)
-        end
-
         if idx == 2
             Legend(
                 fig[3, :],
                 ax_mse_filter,
                 "State Space Dimension",
                 framevisible=false,
-                nbanks=3,
+                nbanks=4,
                 padding=(0.0f0, 0.0f0, 0.0f0, 0.0f0),
                 tellheight=true,
                 # titlegap=1.0,
