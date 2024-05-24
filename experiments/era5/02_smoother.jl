@@ -16,7 +16,10 @@ scache = ComputationAwareKalman.JLD2SmootherCache{
     typeof(ComputationAwareKalman.M(fcache, length(dgmp))),
     typeof(ComputationAwareKalman.w(fcache, length(dgmp))),
     typeof(ComputationAwareKalman.W(fcache, length(dgmp))),
-}(cache_path, length(dgmp))
+}(
+    cache_path,
+    length(dgmp),
+)
 
 @withprogress name = "Smoothing..." begin
     tic = time_ns()
@@ -25,18 +28,13 @@ scache = ComputationAwareKalman.JLD2SmootherCache{
         dgmp,
         fcache,
         scache;
-        truncate_kwargs=(
-            max_cols=config.max_rank,
-            min_sval=config.min_sval,
+        truncate_kwargs = (max_cols = config.max_rank, min_sval = config.min_sval),
+        callback_fn = (
+            (k, args...; kwargs...) -> @logprogress 1 - (k - 1) / (length(dgmp) - 1)
         ),
-        callback_fn=((k, args...; kwargs...) -> @logprogress 1 - (k - 1) / (length(dgmp) - 1)),
     )
 
     global smoother_wall_ns = time_ns() - tic
 end
 
-jldsave(
-    smoother_res_path;
-    cache=scache,
-    wall_time_ns=smoother_wall_ns,
-)
+jldsave(smoother_res_path; cache = scache, wall_time_ns = smoother_wall_ns)

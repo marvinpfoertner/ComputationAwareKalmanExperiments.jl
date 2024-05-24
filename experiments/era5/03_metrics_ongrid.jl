@@ -4,9 +4,7 @@ config_id = length(ARGS) > 0 ? ARGS[1] : "debug"
 
 include("init_experiment.jl")
 
-metrics = Dict{String,Any}(
-    "state_space_dim" => size(H_plot, 2),
-)
+metrics = Dict{String,Any}("state_space_dim" => size(H_plot, 2))
 
 # Load filter results
 stages = ["filter"]
@@ -42,7 +40,7 @@ for stage in stages
     nlls_test = Float64[]
 
     with_ds(era5) do ds
-        @progress name = stage for k in 1:length(dgmp)
+        @progress name = stage for k = 1:length(dgmp)
             yₖ = vec(T₂ₘs(era5, ds, era5_split.t_idcs_train[k])) .- data_mean
 
             if stage == "filter"

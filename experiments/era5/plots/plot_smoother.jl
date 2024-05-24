@@ -24,42 +24,39 @@ scache = jldopen(smoother_res_path, "r") do results
 end
 
 with_ds(era5) do ds
-    xˢₖ = Observable(
-        ComputationAwareKalman.interpolate(dgmp, fcache, scache, era5.ts[1])
-    )
+    xˢₖ = Observable(ComputationAwareKalman.interpolate(dgmp, fcache, scache, era5.ts[1]))
 
     fig = Figure()
 
     # Plot mean
-    ax_mean = axis_sphere(
-        fig[1, 1];
-        title="Smoother Mean",
-    )
+    ax_mean = axis_sphere(fig[1, 1]; title = "Smoother Mean")
 
     plot_heatmap_sphere!(
         ax_mean,
         era5,
         @lift(H_plot * mean($xˢₖ) .+ data_mean),
-        colormap=:coolwarm,
+        colormap = :coolwarm,
     )
 
     # Plot standard deviation
-    ax_std = axis_sphere(
-        fig[1, 2];
-        title="Smoother Standard Deviation",
-    )
+    ax_std = axis_sphere(fig[1, 2]; title = "Smoother Standard Deviation")
 
     p_std = plot_heatmap_sphere!(
         ax_std,
         era5,
         @lift(sqrt.(H_plot * diag(cov($xˢₖ)))),
-        colormap=Colors.colormap("Purples"),
+        colormap = Colors.colormap("Purples"),
     )
 
     Colorbar(fig[1, 3], p_std)
 
     @withprogress name = "Animating..." begin
-        Makie.record(fig, "$(config.results_path)/smoother.mp4", 1:length(era5.ts), framerate=2) do k
+        Makie.record(
+            fig,
+            "$(config.results_path)/smoother.mp4",
+            1:length(era5.ts),
+            framerate = 2,
+        ) do k
             xˢₖ[] = ComputationAwareKalman.interpolate(dgmp, fcache, scache, era5.ts[k])
 
             @logprogress k / length(era5.ts)

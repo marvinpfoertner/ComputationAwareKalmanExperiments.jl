@@ -20,10 +20,10 @@ Logging.global_logger(
     TeeLogger(
         Logging.global_logger(),
         MinLevelLogger(
-            FileLogger(filter_log_path; always_flush=true, append=true),
+            FileLogger(filter_log_path; always_flush = true, append = true),
             Logging.Info,
         ),
-    )
+    ),
 )
 
 y_mean = T₂ₘ_train_mean(era5_split)
@@ -40,14 +40,9 @@ fcache, filter_wall_ns = with_ds(era5) do ds
 
     tic = Base.time_ns()
 
-    @progress name = "Filtering..." for k in 1:length(dgmp)
+    @progress name = "Filtering..." for k = 1:length(dgmp)
         # Predict
-        m⁻ₖ, M⁻ₖ = ComputationAwareKalman.predict(
-            dgmp,
-            k,
-            mₖ₋₁,
-            M⁺ₖ₋₁,
-        )
+        m⁻ₖ, M⁻ₖ = ComputationAwareKalman.predict(dgmp, k, mₖ₋₁, M⁺ₖ₋₁)
 
         # Update
         yₖ = T₂ₘs_train(era5_split, ds, k) .- y_mean
@@ -63,7 +58,7 @@ fcache, filter_wall_ns = with_ds(era5) do ds
             @assert config.max_iter <= length(yₖ)
 
             policy = ComputationAwareKalman.CoordinatePolicy(
-                round.(Int, collect(range(1, length(yₖ), config.max_iter + 1)))
+                round.(Int, collect(range(1, length(yₖ), config.max_iter + 1))),
             )
         end
 
@@ -80,21 +75,21 @@ fcache, filter_wall_ns = with_ds(era5) do ds
             ComputationAwareKalman.H(mmod, k),
             ComputationAwareKalman.Λ(mmod, k),
             yₖ,
-            abstol=config.abstol,
-            reltol=config.reltol,
-            max_iter=config.max_iter,
-            policy=policy,
-            callback_fn=update_callback,
+            abstol = config.abstol,
+            reltol = config.reltol,
+            max_iter = config.max_iter,
+            policy = policy,
+            callback_fn = update_callback,
         )
 
         # Truncate
         M⁺ₖ, Π⁺ₖ = ComputationAwareKalman.truncate(
             xₖ.M;
-            min_sval=config.min_sval,
-            max_cols=config.max_rank,
+            min_sval = config.min_sval,
+            max_cols = config.max_rank,
         )
 
-        push!(fcache; m⁻=m⁻ₖ, xₖ..., M⁺=M⁺ₖ, Π⁺=Π⁺ₖ)
+        push!(fcache; m⁻ = m⁻ₖ, xₖ..., M⁺ = M⁺ₖ, Π⁺ = Π⁺ₖ)
 
         mₖ₋₁ = xₖ.m
         M⁺ₖ₋₁ = M⁺ₖ
@@ -105,9 +100,4 @@ fcache, filter_wall_ns = with_ds(era5) do ds
     return fcache, filter_wall_ns
 end
 
-jldsave(
-    filter_res_path;
-    cache=fcache,
-    wall_time_ns=filter_wall_ns,
-    data_mean=y_mean,
-)
+jldsave(filter_res_path; cache = fcache, wall_time_ns = filter_wall_ns, data_mean = y_mean)

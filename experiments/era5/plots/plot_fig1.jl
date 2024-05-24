@@ -12,13 +12,13 @@ include("utils.jl")
 
 T = Theme(
     TuePlots.SETTINGS[:NEURIPS];
-    font=true,
-    fontsize=true,
-    single_column=false,
-    figsize=true,
-    thinned=true,
-    subplot_height_to_width_ratio=1.3,
-    width_coeff=0.25,
+    font = true,
+    fontsize = true,
+    single_column = false,
+    figsize = true,
+    thinned = true,
+    subplot_height_to_width_ratio = 1.3,
+    width_coeff = 0.25,
 )
 
 Tmin = -48.51
@@ -51,52 +51,37 @@ function temp_cmap_scale(relval)
     return -T / (T >= 0.0 ? Tmax : abs(Tmin))
 end
 
-centered_coolwarm = cgrad(
-    :coolwarm,
-    scale=temp_cmap_scale,
-)
+centered_coolwarm = cgrad(:coolwarm, scale = temp_cmap_scale)
 
 plot_params = Dict(
     "$(n)_data" => (
-        values=yₙ,
-        color_kw=(
-            colormap=centered_coolwarm,
-            colorrange=(Tmin, Tmax),
-        ),
-        ticks=[-45, 0, 35],
+        values = yₙ,
+        color_kw = (colormap = centered_coolwarm, colorrange = (Tmin, Tmax)),
+        ticks = [-45, 0, 35],
     ),
     "$(n)_smoother_mean" => (
-        values=mˢₙ,
-        color_kw=(
-            colormap=centered_coolwarm,
-            colorrange=(Tmin, Tmax),
-        ),
-        ticks=[-45, 0, 35],
+        values = mˢₙ,
+        color_kw = (colormap = centered_coolwarm, colorrange = (Tmin, Tmax)),
+        ticks = [-45, 0, 35],
     ),
     "$(n)_smoother_std" => (
-        values=σˢₙ,
-        color_kw=(
-            colormap=cgrad(Colors.colormap("Purples"), scale=exp),
-            colorrange=(stdmin, stdmax),
+        values = σˢₙ,
+        color_kw = (
+            colormap = cgrad(Colors.colormap("Purples"), scale = exp),
+            colorrange = (stdmin, stdmax),
         ),
-        ticks=[0, 5, 10],
+        ticks = [0, 5, 10],
     ),
 )
 
 for plot_name in keys(plot_params)
     with_theme(T) do
-        fig = Makie.Figure(
-            figure_padding=0,
-        )
+        fig = Makie.Figure(figure_padding = 0)
 
         lscene = LScene(
             fig[1, 1],
-            show_axis=false,
-            scenekw=(
-                projection=:Orthographic,
-                clear=true,
-                center=false,
-            ),
+            show_axis = false,
+            scenekw = (projection = :Orthographic, clear = true, center = false),
         )
 
         scene = lscene.scene
@@ -116,13 +101,13 @@ for plot_name in keys(plot_params)
 
         Colorbar(
             fig[2, 1],
-            vertical=false,
-            flipaxis=false,
-            height=6,
-            width=Relative(3 / 4),
-            ticks=plot_params[plot_name].ticks;
-            tickformat="{:.0f} °C",
-            tickwidth=0.5,
+            vertical = false,
+            flipaxis = false,
+            height = 6,
+            width = Relative(3 / 4),
+            ticks = plot_params[plot_name].ticks;
+            tickformat = "{:.0f} °C",
+            tickwidth = 0.5,
             plot_params[plot_name].color_kw...,
         )
 
@@ -133,8 +118,8 @@ for plot_name in keys(plot_params)
         save(
             "$(config.results_path)/$plot_name.png",
             fig,
-            px_per_unit=30.0,
-            update=false,
+            px_per_unit = 30.0,
+            update = false,
         )
     end
 end

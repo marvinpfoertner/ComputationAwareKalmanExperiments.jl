@@ -33,9 +33,11 @@ const Nθ_total::Int = 2 * 2 * 2 * 2 * 3 * 3 * 5 + 1  # = 721
 #                    |_____| |_________________|
 #                      = 4          = 180
 
-function ERA5(ds_path::String; t_idcs=1:7*24, step_λ::Integer=1, step_θ::Integer=1)
-    isinteger(Nλ_total // step_λ) || throw(DimensionMismatch("Nλ_total is not divisible by step_λ"))
-    isinteger((Nθ_total - 1) // step_θ) || throw(DimensionMismatch("Nθ_total - 1 is not divisible by step_θ"))
+function ERA5(ds_path::String; t_idcs = 1:7*24, step_λ::Integer = 1, step_θ::Integer = 1)
+    isinteger(Nλ_total // step_λ) ||
+        throw(DimensionMismatch("Nλ_total is not divisible by step_λ"))
+    isinteger((Nθ_total - 1) // step_θ) ||
+        throw(DimensionMismatch("Nθ_total - 1 is not divisible by step_θ"))
 
     ts, λs, θs = NCDataset(ds_path, "r") do ds
         @assert Nλ_total == length(ds["longitude"])
@@ -53,32 +55,17 @@ function ERA5(ds_path::String; t_idcs=1:7*24, step_λ::Integer=1, step_θ::Integ
     xyzs = reshape(
         stack(
             [
-                ComputationAwareKalmanExperiments.gcs_to_cartesian(λ, θ, r=r_earth)
-                for θ in θs
-                for λ in λs
+                ComputationAwareKalmanExperiments.gcs_to_cartesian(λ, θ, r = r_earth)
+                for θ in θs for λ in λs
             ],
-            dims=1,
+            dims = 1,
         ),
         (length(λs), length(θs), 3),
     )
 
-    λθs = Tuple{Float64,Float64}[
-        (λ, θ)
-        for θ in θs
-        for λ in λs
-    ]
+    λθs = Tuple{Float64,Float64}[(λ, θ) for θ in θs for λ in λs]
 
-    return ERA5(
-        ds_path,
-        ts,
-        t_idcs,
-        λs,
-        θs,
-        Int(step_λ),
-        Int(step_θ),
-        xyzs,
-        λθs,
-    )
+    return ERA5(ds_path, ts, t_idcs, λs, θs, Int(step_λ), Int(step_θ), xyzs, λθs)
 end
 
 function with_ds(f, era5::ERA5)
@@ -88,7 +75,7 @@ end
 function T₂ₘs(era5::ERA5, ds::NCDataset, k::Integer)
     return convert(
         Matrix{Float64},
-        ds["t2m"][1:era5.step_λ:end, 1:era5.step_θ:end, era5.t_idcs[k]]
+        ds["t2m"][1:era5.step_λ:end, 1:era5.step_θ:end, era5.t_idcs[k]],
     ) .- 273.15  # °C
 end
 
@@ -116,21 +103,24 @@ function ERA5TrainTestSplit(era5::ERA5, t_idcs_test::Vector{Int}, λθ_idcs_test
     )
 end
 
-function ERA5TrainTestSplit(era5::ERA5, t_idcs_test::Vector{Int}, step_λ_test::Int, step_θ_test::Int)
-    isinteger(length(era5.λs) // step_λ_test) || throw(DimensionMismatch("λs is not divisible by step_λ_test"))
-    isinteger((length(era5.θs) - 1) // step_θ_test) || throw(DimensionMismatch("θs[1:end - 1] is not divisible by step_θ_test"))
+function ERA5TrainTestSplit(
+    era5::ERA5,
+    t_idcs_test::Vector{Int},
+    step_λ_test::Int,
+    step_θ_test::Int,
+)
+    isinteger(length(era5.λs) // step_λ_test) ||
+        throw(DimensionMismatch("λs is not divisible by step_λ_test"))
+    isinteger((length(era5.θs) - 1) // step_θ_test) ||
+        throw(DimensionMismatch("θs[1:end - 1] is not divisible by step_θ_test"))
 
     λθ_idcs_test = [
-        (i - 1) * length(era5.λs) + j
-        for i in (1+step_θ_test):step_θ_test:(length(era5.θs)-1)
-        for j in 1:step_λ_test:length(era5.λs)
+        (i - 1) * length(era5.λs) + j for
+        i = (1+step_θ_test):step_θ_test:(length(era5.θs)-1) for
+        j = 1:step_λ_test:length(era5.λs)
     ]
 
-    return ERA5TrainTestSplit(
-        era5,
-        t_idcs_test,
-        λθ_idcs_test,
-    )
+    return ERA5TrainTestSplit(era5, t_idcs_test, λθ_idcs_test)
 end
 
 function ts_train(era5_split::ERA5TrainTestSplit)
@@ -143,22 +133,14 @@ end
 
 function T₂ₘs_train(era5_split::ERA5TrainTestSplit, ds::NCDataset, k_train::Integer)
     return reshape(
-        T₂ₘs(
-            era5_split.era5,
-            ds,
-            era5_split.t_idcs_train[k_train]
-        ),
+        T₂ₘs(era5_split.era5, ds, era5_split.t_idcs_train[k_train]),
         length(era5_split.era5.λθs),
     )[era5_split.λθ_idcs_train]
 end
 
 function T₂ₘs_test(era5_split::ERA5TrainTestSplit, ds::NCDataset, k_train::Integer)
     return reshape(
-        T₂ₘs(
-            era5_split.era5,
-            ds,
-            era5_split.t_idcs_train[k_train]
-        ),
+        T₂ₘs(era5_split.era5, ds, era5_split.t_idcs_train[k_train]),
         length(era5_split.era5.λθs),
     )[era5_split.λθ_idcs_test]
 end
@@ -167,7 +149,7 @@ function T₂ₘ_train_mean(era5_split::ERA5TrainTestSplit)
     res = 0.0
 
     with_ds(era5_split.era5) do ds
-        for k_train in 1:length(era5_split.t_idcs_train)
+        for k_train = 1:length(era5_split.t_idcs_train)
             res += mean(T₂ₘs_train(era5_split, ds, k_train))
         end
     end

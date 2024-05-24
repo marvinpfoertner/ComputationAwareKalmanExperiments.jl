@@ -4,17 +4,17 @@ using CairoMakie
 using TuePlots
 using Colors
 
-CairoMakie.activate!(type="svg")
+CairoMakie.activate!(type = "svg")
 
 T = Theme(
     TuePlots.SETTINGS[:ICML];
-    font=true,
-    fontsize=true,
-    single_column=true,
-    figsize=true,
-    thinned=true,
-    nrows=5,
-    ncols=4,
+    font = true,
+    fontsize = true,
+    single_column = true,
+    figsize = true,
+    thinned = true,
+    nrows = 5,
+    ncols = 4,
 )
 
 
@@ -56,9 +56,8 @@ Random.seed!(123)
 
 σ²obs = 0.1^2
 ϵ = Normal(0.0, sqrt(σ²obs))
-ys = hcat(
-    [[f_star(ts[i], xs[j]) for j in 1:length(xs)] for i in 1:length(ts)]...
-)' + rand(ϵ, (length(ts), length(xs)))
+ys =
+    hcat([[f_star(ts[i], xs[j]) for j = 1:length(xs)] for i = 1:length(ts)]...)' + rand(ϵ, (length(ts), length(xs)))
 
 
 function CAKS_prediction(; max_iter::Integer, truncation_rank::Integer)
@@ -77,10 +76,7 @@ function CAKS_prediction(; max_iter::Integer, truncation_rank::Integer)
     mmod = ComputationAwareKalman.UniformMeasurementModel(
         kronecker(
             stsgmp.tgmp.H,
-            ComputationAwareKalmanExperiments.RestrictionMatrix(
-                N,
-                1:N_train,
-            )
+            ComputationAwareKalmanExperiments.RestrictionMatrix(N, 1:N_train),
         ),
         σ²obs * I(N_train),
     )
@@ -88,10 +84,7 @@ function CAKS_prediction(; max_iter::Integer, truncation_rank::Integer)
     # Emission Model
     H = kronecker(
         stsgmp.tgmp.H,
-        ComputationAwareKalmanExperiments.RestrictionMatrix(
-            N,
-            N_train+1:N,
-        )
+        ComputationAwareKalmanExperiments.RestrictionMatrix(N, N_train+1:N),
     )
 
 
@@ -101,14 +94,9 @@ function CAKS_prediction(; max_iter::Integer, truncation_rank::Integer)
     mₖ₋₁ = ComputationAwareKalman.μ(dgmp, 0)
     M⁺ₖ₋₁ = zeros(Float64, size(mₖ₋₁, 1), 0)
 
-    for k in 1:length(dgmp)
+    for k = 1:length(dgmp)
         # Predict
-        m⁻ₖ, M⁻ₖ = ComputationAwareKalman.predict(
-            dgmp,
-            k,
-            mₖ₋₁,
-            M⁺ₖ₋₁,
-        )
+        m⁻ₖ, M⁻ₖ = ComputationAwareKalman.predict(dgmp, k, mₖ₋₁, M⁺ₖ₋₁)
 
         # Update
         yₖ = ys[k, :]
@@ -120,14 +108,14 @@ function CAKS_prediction(; max_iter::Integer, truncation_rank::Integer)
             ComputationAwareKalman.H(mmod, k),
             ComputationAwareKalman.Λ(mmod, k),
             yₖ,
-            abstol=1e-9,
-            reltol=1e-9,
-            max_iter=max_iter,
+            abstol = 1e-9,
+            reltol = 1e-9,
+            max_iter = max_iter,
             # max_iter=size(ComputationAwareKalman.H(mmod, k), 1),
         )
 
         # Truncate
-        M⁺ₖ, Π⁺ₖ = ComputationAwareKalman.truncate(xₖ.M, min_sval=1e-6)
+        M⁺ₖ, Π⁺ₖ = ComputationAwareKalman.truncate(xₖ.M, min_sval = 1e-6)
 
         push!(fcache, yₖ, xₖ, M⁺ₖ, Π⁺ₖ)
 
@@ -137,15 +125,12 @@ function CAKS_prediction(; max_iter::Integer, truncation_rank::Integer)
 
 
     # Computation-aware Kalman Smoother
-    scache = ComputationAwareKalman.smooth(
-        dgmp,
-        fcache,
-        truncate_kwargs=(min_sval=1e-9,),
-    )
+    scache =
+        ComputationAwareKalman.smooth(dgmp, fcache, truncate_kwargs = (min_sval = 1e-9,))
     scache_truncated = ComputationAwareKalman.smooth(
         dgmp,
         fcache,
-        truncate_kwargs=(max_cols=truncation_rank, min_sval=1e-9,),
+        truncate_kwargs = (max_cols = truncation_rank, min_sval = 1e-9),
         # truncate_kwargs=(min_sval=1e-9,),
     )
 
@@ -158,18 +143,18 @@ with_theme(T) do
 
     max_iters_list = [1, 2, 3, 4]
 
-    ax11 = Axis(fig[1, 1], ylabel="Prediction")
+    ax11 = Axis(fig[1, 1], ylabel = "Prediction")
     ax12 = Axis(fig[1, 2])
     ax13 = Axis(fig[1, 3])
     ax14 = Axis(fig[1, 4])
-    ax21 = Axis(fig[2, 1], ylabel="Uncertainty")
+    ax21 = Axis(fig[2, 1], ylabel = "Uncertainty")
     ax22 = Axis(fig[2, 2])
     ax23 = Axis(fig[2, 3])
     ax24 = Axis(fig[2, 4])
-    ax31 = Axis(fig[3, 1], xlabel="Time", ylabel="+ Truncation")
-    ax32 = Axis(fig[3, 2], xlabel="Time")
-    ax33 = Axis(fig[3, 3], xlabel="Time")
-    ax34 = Axis(fig[3, 4], xlabel="Time")
+    ax31 = Axis(fig[3, 1], xlabel = "Time", ylabel = "+ Truncation")
+    ax32 = Axis(fig[3, 2], xlabel = "Time")
+    ax33 = Axis(fig[3, 3], xlabel = "Time")
+    ax34 = Axis(fig[3, 4], xlabel = "Time")
 
     hm_pred = nothing
 
@@ -178,30 +163,38 @@ with_theme(T) do
         # Computation-aware filtering and smoothing
         #TODO: same colormap limits for all plots
         #TODO: non-uniform mesh for more interesting uncertainty
-        (ts_plot, xs_plot, dgmp, H_plot, scache, scache_truncated) = CAKS_prediction(max_iter=max_iter, truncation_rank=2 * max_iter)
+        (ts_plot, xs_plot, dgmp, H_plot, scache, scache_truncated) =
+            CAKS_prediction(max_iter = max_iter, truncation_rank = 2 * max_iter)
 
 
         # Posterior mean
-        states = [
-            ComputationAwareKalman.interpolate(dgmp, scache, t)
-            for t in ts_plot
-        ]
+        states = [ComputationAwareKalman.interpolate(dgmp, scache, t) for t in ts_plot]
         hm_pred = CairoMakie.contourf!(
             fig[1, idx_col],
             ts_plot,
             xs_plot,
-            hcat([H_plot * Statistics.mean(states[k]) for k in 1:length(ts_plot)]...)',
-            colormap=:coolwarm,
-            levels=-0.5:0.1:1.1,
+            hcat([H_plot * Statistics.mean(states[k]) for k = 1:length(ts_plot)]...)',
+            colormap = :coolwarm,
+            levels = -0.5:0.1:1.1,
         )
 
         # Posterior standard deviation
-        post_std = hcat([sqrt.(diag(H_plot * Statistics.cov(states[k]) * H_plot')) for k in 1:length(ts_plot)]...)'
-        states = [
-            ComputationAwareKalman.interpolate(dgmp, scache_truncated, t)
-            for t in ts_plot
-        ]
-        post_std_trunc = hcat([sqrt.(diag(H_plot * Statistics.cov(states[k]) * H_plot')) for k in 1:length(ts_plot)]...)'
+        post_std =
+            hcat(
+                [
+                    sqrt.(diag(H_plot * Statistics.cov(states[k]) * H_plot')) for
+                    k = 1:length(ts_plot)
+                ]...,
+            )'
+        states =
+            [ComputationAwareKalman.interpolate(dgmp, scache_truncated, t) for t in ts_plot]
+        post_std_trunc =
+            hcat(
+                [
+                    sqrt.(diag(H_plot * Statistics.cov(states[k]) * H_plot')) for
+                    k = 1:length(ts_plot)
+                ]...,
+            )'
         print(maximum(hcat(post_std, post_std_trunc)))
         uq_scale_max = 0.76
         CairoMakie.contourf!(
@@ -209,8 +202,9 @@ with_theme(T) do
             ts_plot,
             xs_plot,
             post_std,
-            colormap=Colors.colormap("Purples"),
-            levels=0.0:0.1:uq_scale_max,)
+            colormap = Colors.colormap("Purples"),
+            levels = 0.0:0.1:uq_scale_max,
+        )
 
         # Truncated posterior standard deviation
         CairoMakie.contourf!(
@@ -218,8 +212,8 @@ with_theme(T) do
             ts_plot,
             xs_plot,
             post_std_trunc,
-            colormap=Colors.colormap("Purples"),
-            levels=0.0:0.1:uq_scale_max,
+            colormap = Colors.colormap("Purples"),
+            levels = 0.0:0.1:uq_scale_max,
         )
 
     end
@@ -239,7 +233,7 @@ with_theme(T) do
 
 
     for ax in [ax11, ax12, ax13, ax14, ax21, ax22, ax23, ax24, ax31, ax32, ax33, ax34]
-        hidedecorations!(ax, label=false)
+        hidedecorations!(ax, label = false)
         tightlimits!(ax)
     end
 
@@ -247,12 +241,12 @@ with_theme(T) do
         Label(
             fig[row_idx, 5],
             "Space",
-            font=Makie.to_font("Times"),
-            tellwidth=true,
-            tellheight=false,
+            font = Makie.to_font("Times"),
+            tellwidth = true,
+            tellheight = false,
             # padding=(0.0f0, 0.0f0, 0.0f0, 0.0f0),
-            rotation=-π / 2,
-            fontsize=8
+            rotation = -π / 2,
+            fontsize = 8,
         )
     end
 
@@ -268,10 +262,11 @@ with_theme(T) do
     iterationlabel = Label(
         fig[0, 2:3],
         "More Iterations →",
-        font=Makie.to_font("Times"),
-        tellwidth=true,
-        padding=(0.0f0, 0.0f0, 0.0f0, 0.0f0),
-        fontsize=8)
+        font = Makie.to_font("Times"),
+        tellwidth = true,
+        padding = (0.0f0, 0.0f0, 0.0f0, 0.0f0),
+        fontsize = 8,
+    )
 
     rowgap!(fig.layout, Fixed(3.0))
     colgap!(fig.layout, Fixed(3.0))
@@ -279,4 +274,3 @@ with_theme(T) do
     save("$results_path/smoother_iter_trunc.pdf", fig)
     fig
 end
-

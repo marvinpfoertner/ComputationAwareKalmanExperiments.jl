@@ -18,7 +18,13 @@ struct ERA5ExperimentConfig{Ttidcs}
     results_path::String
 end
 
-function default_config(config_id::String, step_λθ::Int, max_iter::Int, max_rank::Int=2 * max_iter; policy::String="cg")
+function default_config(
+    config_id::String,
+    step_λθ::Int,
+    max_iter::Int,
+    max_rank::Int = 2 * max_iter;
+    policy::String = "cg",
+)
     t_idcs = 1:2*24
 
     step_λθ_test = 2
@@ -115,7 +121,5 @@ configs = [
     default_config("12-512-coordinate",  12, 2^9, policy="coordinate"),
     #! format: on
 ]
-configs = Dict{String,ERA5ExperimentConfig}(
-    config.config_id => config
-    for config in configs
-)
+configs =
+    Dict{String,ERA5ExperimentConfig}(config.config_id => config for config in configs)

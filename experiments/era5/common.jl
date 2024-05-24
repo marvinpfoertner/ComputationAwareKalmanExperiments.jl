@@ -13,11 +13,8 @@ Logging.global_logger(
             log_args -> typeof(log_args.message) == ProgressLogging.ProgressString,
             TerminalLogger(),
         ),
-        MinLevelLogger(
-            TerminalLogger(),
-            Logging.Warn,
-        )
-    )
+        MinLevelLogger(TerminalLogger(), Logging.Warn),
+    ),
 )
 
 include("common/data.jl")

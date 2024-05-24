@@ -14,18 +14,13 @@ data_path = joinpath(@__DIR__, "data", "era5_t2m.nc")
 
 era5 = ERA5(
     data_path;
-    t_idcs=config.t_idcs,
-    step_λ=config.step_λθ,
-    step_θ=config.step_λθ,
+    t_idcs = config.t_idcs,
+    step_λ = config.step_λθ,
+    step_θ = config.step_λθ,
 )
 
 # Split data in train and test set
-era5_split = ERA5TrainTestSplit(
-    era5,
-    Int[],
-    config.step_λθ_test,
-    config.step_λθ_test,
-)
+era5_split = ERA5TrainTestSplit(era5, Int[], config.step_λθ_test, config.step_λθ_test)
 
 # Construct prior
 stsgmp = prior(
@@ -53,7 +48,7 @@ filter_log_path = joinpath(config.results_path, "filter.log")
 
 function clear_results()
     if isdir(cache_path)
-        rm(cache_path; recursive=true)
+        rm(cache_path; recursive = true)
     end
 
     if isfile(filter_res_path)
