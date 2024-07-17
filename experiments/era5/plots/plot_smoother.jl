@@ -26,10 +26,10 @@ end
 with_ds(era5) do ds
     xˢₖ = Observable(ComputationAwareKalman.interpolate(dgmp, fcache, scache, era5.ts[1]))
 
-    fig = Figure()
+    fig = Figure(size = (4320, 2160))
 
     # Plot mean
-    ax_mean = axis_sphere(fig[1, 1]; title = "Smoother Mean")
+    ax_mean = axis_sphere(fig[1, 1])
 
     plot_heatmap_sphere!(
         ax_mean,
@@ -39,7 +39,7 @@ with_ds(era5) do ds
     )
 
     # Plot standard deviation
-    ax_std = axis_sphere(fig[1, 2]; title = "Smoother Standard Deviation")
+    ax_std = axis_sphere(fig[1, 2])
 
     p_std = plot_heatmap_sphere!(
         ax_std,
@@ -48,14 +48,12 @@ with_ds(era5) do ds
         colormap = Colors.colormap("Purples"),
     )
 
-    Colorbar(fig[1, 3], p_std)
-
     @withprogress name = "Animating..." begin
         Makie.record(
             fig,
             "$(config.results_path)/smoother.mp4",
             1:length(era5.ts),
-            framerate = 2,
+            framerate = 12,
         ) do k
             xˢₖ[] = ComputationAwareKalman.interpolate(dgmp, fcache, scache, era5.ts[k])
 
