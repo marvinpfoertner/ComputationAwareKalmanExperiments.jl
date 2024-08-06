@@ -117,7 +117,7 @@ function CAKS_prediction(; max_iter::Integer, truncation_rank::Integer)
         # Truncate
         M⁺ₖ, Π⁺ₖ = ComputationAwareKalman.truncate(xₖ.M, min_sval = 1e-6)
 
-        push!(fcache, yₖ, xₖ, M⁺ₖ, Π⁺ₖ)
+        push!(fcache; m⁻ = m⁻ₖ, xₖ..., M⁺ = M⁺ₖ, Π⁺ = Π⁺ₖ)
 
         mₖ₋₁ = xₖ.m
         M⁺ₖ₋₁ = M⁺ₖ
@@ -134,7 +134,7 @@ function CAKS_prediction(; max_iter::Integer, truncation_rank::Integer)
         # truncate_kwargs=(min_sval=1e-9,),
     )
 
-    return ts_plot, xs_plot, dgmp, H, scache, scache_truncated
+    return ts_plot, xs_plot, dgmp, H, fcache, scache, scache_truncated
 end
 
 # Plot
@@ -163,12 +163,13 @@ with_theme(T) do
         # Computation-aware filtering and smoothing
         #TODO: same colormap limits for all plots
         #TODO: non-uniform mesh for more interesting uncertainty
-        (ts_plot, xs_plot, dgmp, H_plot, scache, scache_truncated) =
+        (ts_plot, xs_plot, dgmp, H_plot, fcache, scache, scache_truncated) =
             CAKS_prediction(max_iter = max_iter, truncation_rank = 2 * max_iter)
 
 
         # Posterior mean
-        states = [ComputationAwareKalman.interpolate(dgmp, scache, t) for t in ts_plot]
+        states =
+            [ComputationAwareKalman.interpolate(dgmp, fcache, scache, t) for t in ts_plot]
         hm_pred = CairoMakie.contourf!(
             fig[1, idx_col],
             ts_plot,
@@ -186,8 +187,10 @@ with_theme(T) do
                     k = 1:length(ts_plot)
                 ]...,
             )'
-        states =
-            [ComputationAwareKalman.interpolate(dgmp, scache_truncated, t) for t in ts_plot]
+        states = [
+            ComputationAwareKalman.interpolate(dgmp, fcache, scache_truncated, t) for
+            t in ts_plot
+        ]
         post_std_trunc =
             hcat(
                 [
