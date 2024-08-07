@@ -117,17 +117,22 @@ with_theme(T) do
     ax11 = Axis(fig[1, 1], ylabel = "Prediction")
     ax12 = Axis(fig[1, 2])
     ax13 = Axis(fig[1, 3])
-    ax14 = Axis(fig[1, 4])
+    ax14 = Axis(fig[1, 4], ylabel = "Space")
     ax21 = Axis(fig[2, 1], ylabel = "Uncertainty")
     ax22 = Axis(fig[2, 2])
     ax23 = Axis(fig[2, 3])
-    ax24 = Axis(fig[2, 4])
+    ax24 = Axis(fig[2, 4], ylabel = "Space")
     ax31 = Axis(fig[3, 1], xlabel = "Time", ylabel = "Absolute Error")
     ax32 = Axis(fig[3, 2], xlabel = "Time")
     ax33 = Axis(fig[3, 3], xlabel = "Time")
-    ax34 = Axis(fig[3, 4], xlabel = "Time")
+    ax34 = Axis(fig[3, 4], xlabel = "Time", ylabel = "Space")
 
     for truncate in [false, true]
+
+        post_mean_heatmap = nothing
+        post_std_heatmap = nothing
+        abs_err_heatmap = nothing
+
         for (idx_col, max_iter) in enumerate(max_iters_list)
             # Computation-aware filtering and smoothing
             #TODO: same colormap limits for all plots
@@ -145,7 +150,7 @@ with_theme(T) do
             post_mean =
                 hcat([H_plot * Statistics.mean(states[k]) for k = 1:length(ts_plot)]...)'
 
-            CairoMakie.contourf!(
+            post_mean_heatmap_tmp = CairoMakie.contourf!(
                 fig[1, idx_col],
                 ts_plot,
                 xs_plot,
@@ -165,7 +170,7 @@ with_theme(T) do
 
             uq_scale_max = 0.76
 
-            CairoMakie.contourf!(
+            post_std_heatmap_tmp = CairoMakie.contourf!(
                 fig[2, idx_col],
                 ts_plot,
                 xs_plot,
@@ -186,7 +191,7 @@ with_theme(T) do
                     )'
                 )
 
-            CairoMakie.contourf!(
+            abs_err_heatmap_tmp = CairoMakie.contourf!(
                 fig[3, idx_col],
                 ts_plot,
                 xs_plot,
@@ -195,10 +200,58 @@ with_theme(T) do
                 levels = 0.0:0.05:uq_scale_max,
             )
 
+            if idx_col == 1
+                post_mean_heatmap = post_mean_heatmap_tmp
+                post_std_heatmap = post_std_heatmap_tmp
+                abs_err_heatmap = abs_err_heatmap_tmp
+            end
+
             println(maximum(hcat(post_std, abs_err)))
         end
 
+        # Color bars
+        cbar_size = 6
+        cbar_labelsize = 8
+        cbar_ticklabelsize = 6
+        cbar_ticksize = 3
+        cbar_tickwidth = 0.5
+        cbar_font = Makie.to_font("Times")
+        Colorbar(
+            fig[1, length(max_iters_list)+1],
+            post_mean_heatmap,
+            size = cbar_size,
+            labelsize = cbar_labelsize,
+            ticksize = cbar_ticksize,
+            tickwidth = cbar_tickwidth,
+            labelfont = cbar_font,
+            ticklabelsize = cbar_ticklabelsize,
+            ticklabelfont = cbar_font,
+        )
+        Colorbar(
+            fig[2, length(max_iters_list)+1],
+            post_std_heatmap,
+            size = cbar_size,
+            labelsize = cbar_labelsize,
+            ticksize = cbar_ticksize,
+            labelfont = cbar_font,
+            ticklabelsize = cbar_ticklabelsize,
+            ticklabelfont = cbar_font,
+            tickwidth = cbar_tickwidth,
+        )
+        Colorbar(
+            fig[3, length(max_iters_list)+1],
+            abs_err_heatmap,
+            size = cbar_size,
+            labelsize = cbar_labelsize,
+            ticksize = cbar_ticksize,
+            labelfont = cbar_font,
+            ticklabelsize = cbar_ticklabelsize,
+            ticklabelfont = cbar_font,
+            tickwidth = cbar_tickwidth,
+        )
 
+
+        # Link axes
         linkxaxes!(ax11, ax12)
         linkxaxes!(ax11, ax13)
         linkxaxes!(ax11, ax14)
@@ -213,22 +266,34 @@ with_theme(T) do
 
 
         for ax in [ax11, ax12, ax13, ax14, ax21, ax22, ax23, ax24, ax31, ax32, ax33, ax34]
-            hidedecorations!(ax, label = false)
             tightlimits!(ax)
         end
 
-        for row_idx in [1, 2, 3]
-            Label(
-                fig[row_idx, 5],
-                "Space",
-                font = Makie.to_font("Times"),
-                tellwidth = true,
-                tellheight = false,
-                # padding=(0.0f0, 0.0f0, 0.0f0, 0.0f0),
-                rotation = -π / 2,
-                fontsize = 8,
-            )
+        for ax in [ax11, ax12, ax13, ax21, ax22, ax23]
+            hidedecorations!(ax, label = false)
         end
+        for ax in [ax31, ax32, ax33]
+            hideydecorations!(ax, label = false)
+        end
+        for ax in [ax14, ax24]
+            hidexdecorations!(ax, label = false)
+        end
+        for ax in [ax14, ax24, ax34]
+            ax.yaxisposition = :right
+        end
+        # for row_idx in [1, 2, 3]
+        #     Label(
+        #         fig[row_idx, end-1],
+        #         "Space",
+        #         font = Makie.to_font("Times"),
+        #         tellwidth = true,
+        #         tellheight = false,
+        #         # padding = (0.0f0, 0.0f0, 0.0f0, 0.0f0),
+        #         rotation = -π / 2,
+        #         fontsize = 8,
+        #         halign = :left,
+        #     )
+        # end
 
         # timelabel = Label(
         #     fig[4, 2:3],
@@ -248,8 +313,8 @@ with_theme(T) do
             fontsize = 8,
         )
 
-        rowgap!(fig.layout, Fixed(3.0))
-        colgap!(fig.layout, Fixed(3.0))
+        rowgap!(fig.layout, Fixed(8.0))
+        colgap!(fig.layout, Fixed(8.0))
 
         fname = truncate ? "trunc" : "full"
         save("$results_path/smoother_iter_$(fname).pdf", fig)
