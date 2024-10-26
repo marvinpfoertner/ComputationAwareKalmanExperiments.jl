@@ -1,7 +1,7 @@
 function predict_sample_pointwise(
     gmc::ComputationAwareKalman.AbstractGaussMarkovChain,
     k::Integer,
-    uₖ₋₁::Ensemble,
+    uₖ₋₁::EnsembleGaussian,
     rng::Random.AbstractRNG,
 )
     Sₖ₋₁ = members(uₖ₋₁)
