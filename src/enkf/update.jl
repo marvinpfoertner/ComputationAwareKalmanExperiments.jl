@@ -5,17 +5,17 @@ function update_enkf(
     u⁻::EnsembleGaussian,
     y::AbstractVector,
     H::AbstractMatrix,
-    Λ::AbstractVector,
+    Λ::AbstractMatrix,
     rng::Random.AbstractRNG,
 )
     Eᶠ = members(u⁻)  # forecasting ensemble
     N = size(Eᶠ, 2)  # number of ensemble members
     Xᶠ = u⁻.Z  # forecasting ensemble-anomaly matrix
 
-    Yₒ = y .+ sqrt(Λ) .* randn(rng, eltype(Λ), (length(y), N))  # perturbed observations
+    Yₒ = y .+ sqrt(Λ) * randn(rng, eltype(Λ), (length(y), N))  # perturbed observations
 
     Y = H * Xᶠ  # transformed ensemble-anomaly matrix
-    C = SymWoodbury(Λ, Y, I)  # innovation matrix
+    C = SymWoodbury(Λ, Y, I(N))  # innovation matrix
 
     Eᵃ = Eᶠ + Xᶠ * Y' * (C \ (Yₒ - H * Eᶠ))  # analysis ensemble
 

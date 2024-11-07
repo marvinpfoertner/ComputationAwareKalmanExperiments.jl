@@ -23,10 +23,13 @@ using .KalmanFilter
 module EnsembleKalmanFilter
 
 using ComputationAwareKalman
+using LinearAlgebra
 using Random
+using Statistics
 
 include("enkf/ensemble.jl")
 include("enkf/predict.jl")
+include("enkf/update.jl")
 
 end
 

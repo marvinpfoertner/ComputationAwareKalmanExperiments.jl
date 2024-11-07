@@ -31,7 +31,7 @@ function ComputationAwareKalman.A_b_lsqrt_Q(
 
     Aₜₛ = ComputationAwareKalman.A(gmp, t, s)
     bₜₛ = zeros(eltype(Aₜₛ), size(Aₜₛ, 1))
-    Qₜₛ = P∞ - Aₜₛ * P∞ * Aₜₛ'
+    Qₜₛ = hermitianpart!(P∞ - Aₜₛ * P∞ * Aₜₛ')
 
-    return Aₜₛ, bₜₛ, Qₜₛ
+    return Aₜₛ, bₜₛ, sqrt(Qₜₛ)
 end

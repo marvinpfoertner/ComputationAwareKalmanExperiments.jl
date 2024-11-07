@@ -4,7 +4,7 @@ struct EnsembleGaussian{Tm<:AbstractVector,TZ<:AbstractMatrix}
 end
 
 function EnsembleGaussian(members::AbstractMatrix)
-    m = mean(members, dims = 2)
+    m = mean(members, dims = 2)[:, 1]
     Z = (members .- m) ./ sqrt(size(members, 2) - 1)
 
     return EnsembleGaussian(m, Z)
