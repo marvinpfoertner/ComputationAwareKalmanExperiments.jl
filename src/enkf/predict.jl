@@ -4,11 +4,8 @@ function predict_sample_pointwise(
     uₖ₋₁::EnsembleGaussian,
     rng::Random.AbstractRNG,
 )
-    Sₖ₋₁ = members(uₖ₋₁)
-    Sₖ = hcat([rand(rng, gmc, k, Sₖ₋₁[:, i]) for i in axes(Sₖ₋₁, 2)]...)
+    Eₖ₋₁ = members(uₖ₋₁)
+    Eₖ = hcat([rand(rng, gmc, k, Eₖ₋₁[:, i]) for i in axes(Eₖ₋₁, 2)]...)
 
-    mₖ = sum(Sₖ, dims = 2) / size(Sₖ, 2)
-    Zₖ = (Sₖ .- mₖ) / sqrt(size(Sₖ, 2) - 1)
-
-    return EnsembleGaussian(mₖ, Zₖ)
+    return EnsembleGaussian(Eₖ)
 end
