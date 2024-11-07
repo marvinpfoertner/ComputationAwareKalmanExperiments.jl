@@ -16,6 +16,10 @@ include("sphere_utils.jl")
 
 export MaternProcess
 
+include("kf.jl")
+
+using .KalmanFilter
+
 module EnsembleKalmanFilter
 
 using ComputationAwareKalman
