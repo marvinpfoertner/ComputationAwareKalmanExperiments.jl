@@ -19,11 +19,13 @@ ts = LinRange(0.0, 5.0, 100)
 Nₓ = 200
 xs = LinRange(-1.0, 1.0, Nₓ)
 
+dgmp = ComputationAwareKalman.discretize(stsgmp, ts, xs)
+
 # Measurement
 ts_train_idcs = 1:10:length(ts)
 ts_train = ts[ts_train_idcs]
 
-dgmp = ComputationAwareKalman.discretize(stsgmp, ts_train, xs)
+dgmp_train = ComputationAwareKalman.discretize(stsgmp, ts_train, xs)
 
 xs_train_idcs = 1:10:Nₓ
 Nₓ_train = length(xs_train_idcs)

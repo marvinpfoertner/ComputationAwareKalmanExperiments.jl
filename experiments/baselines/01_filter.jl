@@ -8,6 +8,8 @@ end
 
 rng = Random.seed!(2345)
 
+ys_train_aug = Vector{Union{eltype(ys_train),Missing}}(missing, length(ts))
+ys_train_aug[ts_train_idcs] = ys_train
 
 function filter_enkf(dgmp, H, Λ, ys_train, rng, rank)
     E₀ = hcat([rand(rng, dgmp, 0) for _ = 1:rank]...)
@@ -23,13 +25,19 @@ function filter_enkf(dgmp, H, Λ, ys_train, rng, rank)
                 us[end],
                 rng,
             )
-        uₖ = ComputationAwareKalmanExperiments.EnsembleKalmanFilter.update_enkf(
-            u⁻ₖ,
-            ys_train[k],
-            H,
-            Λ,
-            rng,
-        )
+
+        if ismissing(ys_train[k])
+            uₖ = u⁻ₖ
+        else
+            uₖ = ComputationAwareKalmanExperiments.EnsembleKalmanFilter.update_enkf(
+                u⁻ₖ,
+                ys_train[k],
+                H,
+                Λ,
+                rng,
+            )
+        end
+
         push!(us, uₖ)
     end
 
