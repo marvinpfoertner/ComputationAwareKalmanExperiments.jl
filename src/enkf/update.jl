@@ -39,7 +39,7 @@ function update_etkf(
     HZᶠ = H * Zᶠ  # square root of transformed forecast covariance
 
     γs, C = eigen!(hermitianpart!(HZᶠ' * (Λ \ HZᶠ)))
-    Zᵃ = Zᶠ * C * Diagonal(sqrt.(γs .+ 1.0))  # square root of analysis covariance, Eq. 16
+    Zᵃ = Zᶠ * C * Diagonal(1 ./ sqrt.(γs .+ 1.0))  # square root of analysis covariance, Eq. 16
 
     return EnsembleGaussian(update_mean(u⁻, y, H, Λ, HZᶠ), Zᵃ)
 end
