@@ -1,12 +1,10 @@
+using DrWatson
+
+@quickactivate "ComputationAwareKalmanExperiments"
+
 include("common.jl")
 
-
-ys_train = jldopen(data_path, "r") do file
-    file["ys_train"]
-end
-
-
-rng = Random.seed!(2345)
+rng = Random.seed!(seed + 1)
 
 ys_train_aug = Vector{Union{eltype(ys_train),Missing}}(missing, length(ts))
 ys_train_aug[ts_train_idcs] = ys_train
