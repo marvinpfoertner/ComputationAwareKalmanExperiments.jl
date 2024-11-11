@@ -12,6 +12,7 @@ include("matfree/restriction.jl")
 include("gmp/lti_sde.jl")
 include("gmp/matern.jl")
 
+include("metrics.jl")
 include("sphere_utils.jl")
 
 export MaternProcess
