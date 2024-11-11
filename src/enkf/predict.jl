@@ -1,11 +1,13 @@
 function predict_sample_pointwise(
-    gmc::ComputationAwareKalman.AbstractGaussMarkovChain,
-    k::Integer,
-    uₖ₋₁::EnsembleGaussian,
+    u::EnsembleGaussian,
+    A::AbstractMatrix,
+    b::AbstractVector,
+    lsqrt_Q::AbstractMatrix,
     rng::Random.AbstractRNG,
 )
-    Eₖ₋₁ = members(uₖ₋₁)
-    Eₖ = hcat([rand(rng, gmc, k, Eₖ₋₁[:, i]) for i in axes(Eₖ₋₁, 2)]...)
+    # Low-rank approximation of left square root of Q by sampling
+    qs = lsqrt_Q * randn(rng, (size(lsqrt_Q, 2), size(u.Z, 2)))
+    Z_Q = (qs .- mean(qs, dims = 2)[:, 1]) / sqrt(size(qs, 2) - 1)
 
-    return EnsembleGaussian(Eₖ)
+    return EnsembleGaussian(A * u.m + b, A * u.Z + Z_Q)
 end

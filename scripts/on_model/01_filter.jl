@@ -9,7 +9,7 @@ rng = Random.seed!(seed + 1)
 ys_train_aug = Vector{Union{eltype(ys_train),Missing}}(missing, length(ts))
 ys_train_aug[ts_train_idcs] = ys_train
 
-function filter_enkf(dgmp, H, Λ, ys_train, rng, rank)
+function filter_enkf(dgmp, mmod, ys_train, rng, rank)
     E₀ = hcat([rand(rng, dgmp, 0) for _ = 1:rank]...)
     u₀ = ComputationAwareKalmanExperiments.EnsembleKalmanFilter.EnsembleGaussian(E₀)
 
@@ -18,9 +18,8 @@ function filter_enkf(dgmp, H, Λ, ys_train, rng, rank)
     for k in axes(ys_train, 1)
         u⁻ₖ =
             ComputationAwareKalmanExperiments.EnsembleKalmanFilter.predict_sample_pointwise(
-                dgmp,
-                k - 1,
                 us[end],
+                ComputationAwareKalman.A_b_lsqrt_Q(dgmp, k - 1)...,
                 rng,
             )
 
@@ -30,8 +29,8 @@ function filter_enkf(dgmp, H, Λ, ys_train, rng, rank)
             uₖ = ComputationAwareKalmanExperiments.EnsembleKalmanFilter.update_enkf(
                 u⁻ₖ,
                 ys_train[k],
-                H,
-                Λ,
+                ComputationAwareKalman.H(mmod, k),
+                ComputationAwareKalman.Λ(mmod, k),
                 rng,
             )
         end
@@ -42,7 +41,7 @@ function filter_enkf(dgmp, H, Λ, ys_train, rng, rank)
     return us[2:end]
 end
 
-function filter_etkf(dgmp, H, Λ, ys_train, rng, rank)
+function filter_etkf(dgmp, mmod, ys_train, rng, rank)
     E₀ = hcat([rand(rng, dgmp, 0) for _ = 1:rank]...)
     u₀ = ComputationAwareKalmanExperiments.EnsembleKalmanFilter.EnsembleGaussian(E₀)
 
@@ -51,9 +50,8 @@ function filter_etkf(dgmp, H, Λ, ys_train, rng, rank)
     for k in axes(ys_train, 1)
         u⁻ₖ =
             ComputationAwareKalmanExperiments.EnsembleKalmanFilter.predict_sample_pointwise(
-                dgmp,
-                k - 1,
                 us[end],
+                ComputationAwareKalman.A_b_lsqrt_Q(dgmp, k - 1)...,
                 rng,
             )
 
@@ -63,8 +61,8 @@ function filter_etkf(dgmp, H, Λ, ys_train, rng, rank)
             uₖ = ComputationAwareKalmanExperiments.EnsembleKalmanFilter.update_etkf(
                 u⁻ₖ,
                 ys_train[k],
-                H,
-                Λ,
+                ComputationAwareKalman.H(mmod, k),
+                ComputationAwareKalman.Λ(mmod, k),
             )
         end
 
