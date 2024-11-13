@@ -21,6 +21,8 @@ xs = LinRange(-1.0, 1.0, Nₓ)
 
 dgmp = ComputationAwareKalman.discretize(stsgmp, ts, xs)
 
+H_plot = kronecker(stsgmp.tgmp.H, I(Nₓ))
+
 # Measurement
 ts_train_idcs = 1:10:length(ts)
 ts_train = ts[ts_train_idcs]

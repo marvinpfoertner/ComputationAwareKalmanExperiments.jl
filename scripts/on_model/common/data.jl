@@ -15,3 +15,6 @@ data, _ = produce_or_load(@dict(seed), datadir("on_model"), prefix = "data") do 
 end
 
 @unpack ys_test, ys_train = data
+
+ys_train_aug = Vector{Union{eltype(ys_train),Missing}}(missing, length(ts))
+ys_train_aug[ts_train_idcs] = ys_train
