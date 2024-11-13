@@ -9,6 +9,37 @@ rng = Random.seed!(seed + 1)
 ys_train_aug = Vector{Union{eltype(ys_train),Missing}}(missing, length(ts))
 ys_train_aug[ts_train_idcs] = ys_train
 
+function filter_kf(dgmp, mmod, ys_train)
+    u₀ = ComputationAwareKalmanExperiments.KalmanFilter.SquareRootGaussian(
+        ComputationAwareKalman.μ(dgmp, 0),
+        collect(ComputationAwareKalman.lsqrt_Σ(dgmp, 0)),
+    )
+
+    us = [u₀]
+
+    for k in axes(ys_train, 1)
+        u⁻ₖ = ComputationAwareKalmanExperiments.KalmanFilter.predict(
+            us[end],
+            ComputationAwareKalman.A_b_lsqrt_Q(dgmp, k - 1)...,
+        )
+
+        if ismissing(ys_train[k])
+            uₖ = u⁻ₖ
+        else
+            uₖ = ComputationAwareKalmanExperiments.KalmanFilter.update(
+                u⁻ₖ,
+                ys_train[k],
+                ComputationAwareKalman.H(mmod, k),
+                ComputationAwareKalman.lsqrt_Λ(mmod, k),
+            )
+        end
+
+        push!(us, uₖ)
+    end
+
+    return us[2:end]
+end
+
 function filter_enkf(dgmp, mmod, ys_train, rng, rank)
     E₀ = hcat([rand(rng, dgmp, 0) for _ = 1:rank]...)
     u₀ = ComputationAwareKalmanExperiments.EnsembleKalmanFilter.EnsembleGaussian(E₀)

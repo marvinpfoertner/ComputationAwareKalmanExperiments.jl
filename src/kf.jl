@@ -1,31 +1,45 @@
 module KalmanFilter
 
+using LinearAlgebra
+using Statistics
+
+struct SquareRootGaussian{Tm<:AbstractVector,TZ<:AbstractMatrix}
+    m::Tm
+    Z::TZ
+end
+
+function Base.:*(A::AbstractMatrix, u::SquareRootGaussian)
+    return SquareRootGaussian(A * u.m, A * u.Z)
+end
+
+function Statistics.var(u::SquareRootGaussian)
+    return sum(u.Z .^ 2, dims = 2)[:, 1]
+end
+
 function predict(
-    m::AbstractVector,
-    P::AbstractMatrix,
+    u::SquareRootGaussian,
     A::AbstractMatrix,
     b::AbstractVector,
-    Q::AbstractMatrix,
+    lsqrt_Q::AbstractMatrix,
 )
-    m⁻ = A * m + b
-    P⁻ = hermitianpart!(A * P * A' + Q)
-
-    return m⁻, P⁻
+    m⁻ = A * u.m + b
+    Z⁻ = lq!([A * u.Z;; lsqrt_Q]).L
+    return SquareRootGaussian(m⁻, Z⁻)
 end
 
 function update(
-    m⁻::AbstractVector,
-    P⁻::AbstractMatrix,
+    u⁻::SquareRootGaussian,
     y::AbstractVector,
     H::AbstractMatrix,
-    R::AbstractMatrix,
+    lsqrt_Λ::AbstractMatrix,
 )
-    v = y - H * m⁻
-    S = hermitianpart!(H * P⁻ * H' + R)
-    K = P⁻ * H' / S
-    m = m⁻ + K * v
-    P = hermitianpart!(P⁻ - K * H * P⁻)
-    return m, P
+    S = Cholesky(LowerTriangular(lq!([H * u⁻.Z;; lsqrt_Λ]).L))
+    K = u⁻.Z * (u⁻.Z' * (H' / S))
+
+    m = u⁻.m + K * (y - H * u⁻.m)
+    Z = lq!([u⁻.Z - K * (H * u⁻.Z);; K * lsqrt_Λ]).L
+
+    return SquareRootGaussian(m, Z)
 end
 
 end
