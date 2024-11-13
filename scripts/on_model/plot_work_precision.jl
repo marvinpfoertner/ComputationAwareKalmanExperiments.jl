@@ -38,8 +38,14 @@ metrics = Dict(
 with_theme(T) do
     fig = Figure()
 
-    ax_mse = Axis(fig[1, 1], xlabel = "Rank", ylabel = "MSE", yscale = log10)
-    ax_nll = Axis(fig[2, 1], xlabel = "Rank", ylabel = "Expected NLL", yscale = log10)
+    ax_mse = Axis(fig[1, 1], xlabel = "Rank", ylabel = "MSE", xscale = log2, yscale = log10)
+    ax_nll = Axis(
+        fig[2, 1],
+        xlabel = "Rank",
+        ylabel = "Expected NLL",
+        xscale = log2,
+        yscale = log10,
+    )
 
     alg2label = Dict("srkf" => "SRKF", "enkf" => "EnKF", "etkf" => "ETKF", "cakf" => "CAKF")
     alg2color = Dict("srkf" => :black, "enkf" => :blue, "etkf" => :green, "cakf" => :red)

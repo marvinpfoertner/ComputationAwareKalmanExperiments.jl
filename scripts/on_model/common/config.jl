@@ -1,4 +1,4 @@
-ranks = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+ranks = [2, 4, 8, 16, 32, 64, 128]
 seed = 345698
 
 configs = Dict(
@@ -17,7 +17,7 @@ configs = Dict(
 
 # Problem parameters
 temporal_domain = (0.0, 5.0)
-spatial_domain = (-2.0, 2.0)
+spatial_domain = (-5.0, 5.0)
 
 # Dynamics parameters
 matern_order_t = 2
@@ -29,7 +29,7 @@ lₓ = 1.5
 
 # Discretization
 Nₜ = 100
-Nₓ = 200
+Nₓ = 1000
 
 # Measurement parameters
 λ² = 0.1^2
@@ -38,4 +38,4 @@ Nₓ = 200
 data_seed = 2345
 
 Nₜ_train = 10
-Nₓ_train = 20
+Nₓ_train = 300

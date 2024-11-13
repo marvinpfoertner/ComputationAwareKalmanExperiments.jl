@@ -4,6 +4,6 @@ using DrWatson
 include("common.jl")
 include("common/plots.jl")
 
-res = results(configs["enkf"][10]);
+res = results(configs["cakf"][8]);
 @unpack uᶠs = res
-plot_fstates(uᶠs; gt = true, cred_int = false)
+plot_fstates(uᶠs; gt = true, cred_int = true)
