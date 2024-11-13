@@ -1,19 +1,19 @@
 using GLMakie
 
-function plot_fstates(fstates; gt = true, cred_int = true)
-    fstates_plot = [H_plot * fstate for fstate in fstates]
+function plot_fstates(uᶠs; gt = true, cred_int = true)
+    uᶠs_plot = [H_all * uᶠ for uᶠ in uᶠs]
 
     plot = scatter(ts_train, xs_train, hcat(ys_train...)')
 
     if gt
-        surface!(ts, xs, (H_plot * hcat(ys_test...))', colormap = :coolwarm)
+        surface!(ts, xs, hcat(fstars...)', colormap = :coolwarm)
     end
 
-    means = hcat([mean(fstate) for fstate in fstates_plot]...)'
+    means = hcat([mean(uᶠ) for uᶠ in uᶠs_plot]...)'
     surface!(ts, xs, means)
 
     if cred_int
-        stds = hcat([std(fstate) for fstate in fstates_plot]...)'
+        stds = hcat([std(uᶠ) for uᶠ in uᶠs_plot]...)'
         surface!(ts, xs, means .+ 2 * stds, alpha = 0.4)
         surface!(ts, xs, means .- 2 * stds, alpha = 0.4)
     end

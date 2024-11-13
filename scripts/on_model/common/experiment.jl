@@ -7,42 +7,36 @@ function results(config::Dict)
         end
 
         if algorithm == "srkf"
-            fstates = Kalman.srkf(dgmp, mmod, ys_train_aug)
+            uᶠs = Kalman.srkf(dgmp_aug, mmod, ys_train_aug)
         elseif algorithm == "enkf"
-            fstates = EnsembleKalman.enkf(
-                dgmp,
+            uᶠs = EnsembleKalman.enkf(
+                dgmp_aug,
                 mmod,
                 ys_train_aug,
                 rng = rng,
                 rank = config["rank"],
             )
         elseif algorithm == "etkf"
-            fstates = EnsembleKalman.etkf(
-                dgmp,
+            uᶠs = EnsembleKalman.etkf(
+                dgmp_aug,
                 mmod,
                 ys_train_aug,
                 rng = rng,
                 rank = config["rank"],
             )
         elseif algorithm == "cakf"
-            fstates = cakf(dgmp_train, mmod, ys_train; rank = config["rank"], ts = ts)
+            uᶠs = cakf(dgmp, mmod, ys_train; rank = config["rank"], ts = ts)
         end
 
         mse = mean([
-            ComputationAwareKalmanExperiments.mse(y, mean(fstate)) for
-            (y, fstate) in zip(ys_test, fstates)
+            ComputationAwareKalmanExperiments.mse(ustar, mean(uᶠ)) for
+            (ustar, uᶠ) in zip(ustars, uᶠs)
         ])
         expected_nll = mean([
-            mean(
-                ComputationAwareKalmanExperiments.gaussian_nll.(
-                    y,
-                    mean(fstate),
-                    var(fstate),
-                ),
-            ) for (y, fstate) in zip(ys_test, fstates)
+            mean(ComputationAwareKalmanExperiments.gaussian_nll.(ustar, mean(uᶠ), var(uᶠ))) for (ustar, uᶠ) in zip(ustars, uᶠs)
         ])
 
-        return @strdict fstates mse expected_nll
+        return @strdict uᶠs mse expected_nll
     end
 
     @info config["algorithm"] results["mse"] results["expected_nll"]

@@ -1,10 +1,9 @@
 using DrWatson
-
 @quickactivate "ComputationAwareKalmanExperiments"
 
 include("common.jl")
 include("common/plots.jl")
 
-res = results(configs["enkf"][2]);
-fstates = res["fstates"]
-plot_fstates(fstates; gt = true, cred_int = true)
+res = results(configs["enkf"][10]);
+@unpack uᶠs = res
+plot_fstates(uᶠs; gt = true, cred_int = false)
