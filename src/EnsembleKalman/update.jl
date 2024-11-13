@@ -2,7 +2,7 @@ using WoodburyMatrices
 
 
 function update_enkf(
-    u⁻::EnsembleGaussian,
+    u⁻::SquareRootGaussian,
     y::AbstractVector,
     H::AbstractMatrix,
     Λ::AbstractMatrix,
@@ -11,7 +11,7 @@ function update_enkf(
     # This implementation is based on section 4.1 of the paper
     # Carrassi, A., Bocquet, M., Bertino, L., and Evensen, G. "Data assimilation in the geosciences: An overview of methods, issues, and perspectives." WIREs Clim Change. 2018.
 
-    Eᶠ = members(u⁻)  # forecasting ensemble, Eq. 32
+    Eᶠ = ensemble(u⁻)  # forecasting ensemble, Eq. 32
     N = size(Eᶠ, 2)  # number of ensemble members, Eq. 32
     Xᶠ = u⁻.Z  # forecasting ensemble-anomaly matrix, Eq. 34
 
@@ -22,12 +22,12 @@ function update_enkf(
 
     Eᵃ = Eᶠ + Xᶠ * (Y' * (C \ (Yₒ - H * Eᶠ)))  # analysis ensemble, Eq. 44
 
-    return EnsembleGaussian(Eᵃ)
+    return ensemble_to_gaussian(Eᵃ)
 end
 
 
 function update_etkf(
-    u⁻::EnsembleGaussian,
+    u⁻::SquareRootGaussian,
     y::AbstractVector,
     H::AbstractMatrix,
     Λ::AbstractMatrix,
@@ -41,11 +41,11 @@ function update_etkf(
     γs, C = eigen!(hermitianpart!(HZᶠ' * (Λ \ HZᶠ)))
     Zᵃ = Zᶠ * C * Diagonal(1 ./ sqrt.(γs .+ 1.0))  # square root of analysis covariance, Eq. 16
 
-    return EnsembleGaussian(update_mean(u⁻, y, H, Λ, HZᶠ), Zᵃ)
+    return SquareRootGaussian(__update_mean(u⁻, y, H, Λ, HZᶠ), Zᵃ)
 end
 
-function update_mean(
-    u⁻::EnsembleGaussian,
+function __update_mean(
+    u⁻::SquareRootGaussian,
     y::AbstractVector,
     H::AbstractMatrix,
     Λ::AbstractMatrix,
