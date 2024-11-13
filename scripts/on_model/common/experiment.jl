@@ -1,21 +1,31 @@
-function run_experiment(algorithm::String; rank::Integer)
-    rng = Random.seed!(seed + 1)
+function run_experiment(config::Dict)
+    results, _ = produce_or_load(config, datadir("on_model"), prefix = "results") do config
+        @unpack algorithm = config
 
-    results, _ = produce_or_load(
-        @dict(seed, algorithm),
-        datadir("on_model"),
-        prefix = "results",
-    ) do config
-        @unpack seed, algorithm = config
+        if "seed" in keys(config)
+            rng = Random.seed!(config["seed"])
+        end
 
         if algorithm == "srkf"
             fstates = Kalman.srkf(dgmp, mmod, ys_train_aug)
         elseif algorithm == "enkf"
-            fstates = EnsembleKalman.enkf(dgmp, mmod, ys_train_aug, rng = rng, rank = rank)
+            fstates = EnsembleKalman.enkf(
+                dgmp,
+                mmod,
+                ys_train_aug,
+                rng = rng,
+                rank = config["rank"],
+            )
         elseif algorithm == "etkf"
-            fstates = EnsembleKalman.etkf(dgmp, mmod, ys_train_aug, rng = rng, rank = rank)
+            fstates = EnsembleKalman.etkf(
+                dgmp,
+                mmod,
+                ys_train_aug,
+                rng = rng,
+                rank = config["rank"],
+            )
         elseif algorithm == "cakf"
-            fstates = cakf(dgmp_train, mmod, ys_train; rank = rank, ts = ts)
+            fstates = cakf(dgmp_train, mmod, ys_train; rank = config["rank"], ts = ts)
         end
 
         mse = mean([
@@ -35,7 +45,7 @@ function run_experiment(algorithm::String; rank::Integer)
         return @strdict fstates mse expected_nll
     end
 
-    @info algorithm results["mse"] results["expected_nll"]
+    @info config["algorithm"] results["mse"] results["expected_nll"]
 
     return results
 end
