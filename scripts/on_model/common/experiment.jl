@@ -1,4 +1,4 @@
-function run_experiment(config::Dict)
+function results(config::Dict)
     results, _ = produce_or_load(config, datadir("on_model"), prefix = "results") do config
         @unpack algorithm = config
 
