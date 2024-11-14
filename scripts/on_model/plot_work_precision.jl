@@ -58,15 +58,22 @@ T = Theme(
     ncols = 1,
 )
 
+alg2label = Dict("srkf" => "SRKF", "enkf" => "EnKF", "etkf" => "ETKF", "cakf" => "CAKF")
+alg2color = Dict("srkf" => :black, "enkf" => :blue, "etkf" => :green, "cakf" => :red)
+whisker_width = 4
+
 with_theme(T) do
     fig = Figure()
 
-    ax_mse =
-        Axis(fig[1, 1], xlabel = "Rank", ylabel = "MSE", xscale = log10, yscale = log10)
-    ax_nll = Axis(fig[2, 1], xlabel = "Rank", ylabel = "Expected NLL", xscale = log10)
-
-    alg2label = Dict("srkf" => "SRKF", "enkf" => "EnKF", "etkf" => "ETKF", "cakf" => "CAKF")
-    alg2color = Dict("srkf" => :black, "enkf" => :blue, "etkf" => :green, "cakf" => :red)
+    ax_mse = Axis(
+        fig[1, 1],
+        # xlabel = "Wall Time [s]",
+        ylabel = "MSE",
+        xscale = log10,
+        yscale = log10,
+    )
+    ax_nll =
+        Axis(fig[2, 1], xlabel = "Wall Time [s]", ylabel = "Expected NLL", xscale = log10)
 
     hlines!(
         ax_mse,
@@ -82,14 +89,15 @@ with_theme(T) do
     )
 
     for alg in ["enkf", "etkf"]
-        # errorbars!(
-        #     ax_mse,
-        #     metrics[alg].wall_time,
-        #     metrics[alg].mse_median,
-        #     metrics[alg].mse_25,
-        #     metrics[alg].mse_75;
-        #     color = alg2color[alg],
-        # )
+        errorbars!(
+            ax_mse,
+            metrics[alg].wall_time,
+            metrics[alg].mse_median,
+            metrics[alg].mse_25,
+            metrics[alg].mse_75;
+            color = alg2color[alg],
+            whiskerwidth = whisker_width,
+        )
 
         scatterlines!(
             ax_mse,
@@ -99,14 +107,15 @@ with_theme(T) do
             color = alg2color[alg],
         )
 
-        # errorbars!(
-        #     ax_nll,
-        #     metrics[alg].wall_time,
-        #     metrics[alg].expected_nll_median,
-        #     metrics[alg].expected_nll_25,
-        #     metrics[alg].expected_nll_75;
-        #     color = alg2color[alg],
-        # )
+        errorbars!(
+            ax_nll,
+            metrics[alg].wall_time,
+            metrics[alg].expected_nll_median,
+            metrics[alg].expected_nll_25,
+            metrics[alg].expected_nll_75;
+            color = alg2color[alg],
+            whiskerwidth = whisker_width,
+        )
 
         scatterlines!(
             ax_nll,
@@ -135,6 +144,11 @@ with_theme(T) do
 
     axislegend(ax_mse)
     axislegend(ax_nll)
+
+    linkxaxes!(ax_mse, ax_nll)
+
+    ylims!(ax_mse; low = 5e0, high = 5e2)
+    ylims!(ax_nll; low = -200, high = 2e4)
 
     safesave(
         plotsdir("on_model", "work_precision.pdf"),
