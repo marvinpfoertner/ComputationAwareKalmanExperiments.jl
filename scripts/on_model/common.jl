@@ -1,3 +1,4 @@
+using BenchmarkTools
 using ComputationAwareKalman
 using ComputationAwareKalmanExperiments
 import ComputationAwareKalmanExperiments: Kalman, EnsembleKalman

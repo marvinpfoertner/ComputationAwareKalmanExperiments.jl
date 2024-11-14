@@ -6,39 +6,53 @@ function results(config::Dict)
             rng = Random.seed!(config["seed"])
         end
 
-        tic = Base.time_ns()
-
         if algorithm == "srkf"
-            uᶠs = Kalman.srkf(dgmp_aug, mmod, ys_train_aug)
+            filter_benchmark = @benchmarkable Kalman.srkf($dgmp_aug, $mmod, $ys_train_aug)
         elseif algorithm == "enkf"
-            uᶠs = EnsembleKalman.enkf(
-                dgmp_aug,
-                mmod,
-                ys_train_aug,
-                rng = rng,
-                rank = config["rank"],
-            )
+            filter_benchmark = @benchmarkable EnsembleKalman.enkf(
+                $dgmp_aug,
+                $mmod,
+                $ys_train_aug,
+                $rng = rng,
+                $rank = config["rank"],
+            ) evals = 1
         elseif algorithm == "etkf"
-            uᶠs = EnsembleKalman.etkf(
-                dgmp_aug,
-                mmod,
-                ys_train_aug,
-                rng = rng,
-                rank = config["rank"],
-            )
+            filter_benchmark = @benchmarkable EnsembleKalman.etkf(
+                $dgmp_aug,
+                $mmod,
+                $ys_train_aug,
+                rng = $rng,
+                rank = $config["rank"],
+            ) evals = 1
         elseif algorithm == "cakf"
-            uᶠs = cakf(dgmp, mmod, ys_train; rank = config["rank"], ts = ts)
+            filter_benchmark = @benchmarkable cakf(
+                $dgmp,
+                $mmod,
+                $ys_train;
+                rank = $config["rank"],
+                ts = $ts,
+            ) evals = 1
         end
 
-        wall_time = (Base.time_ns() - tic) / 1e9
+        # tune!(filter_benchmark)
+        benchmark_trial, uᶠs = BenchmarkTools.run_result(filter_benchmark)
 
         mse = mean([
             ComputationAwareKalmanExperiments.mse(ustar, mean(uᶠ)) for
             (ustar, uᶠ) in zip(ustars, uᶠs)
         ])
+
         expected_nll = mean([
             mean(ComputationAwareKalmanExperiments.gaussian_nll.(ustar, mean(uᶠ), var(uᶠ))) for (ustar, uᶠ) in zip(ustars, uᶠs)
         ])
+
+        wall_time = median(benchmark_trial.times) / 1e9
+
+        if algorithm == "srkf" || algorithm == "enkf" || algorithm == "etkf"
+            # SRKF, EnKF, and ETKF need access to a square root of the process noise covariance,
+            # which is precomputed before the filters are run.
+            wall_time += lsqrt_wall_time
+        end
 
         return merge((@strdict uᶠs mse expected_nll wall_time), config)
     end

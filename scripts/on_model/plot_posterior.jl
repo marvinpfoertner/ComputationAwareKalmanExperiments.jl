@@ -26,6 +26,6 @@ function plot_fstates(uᶠs; gt = true, cred_int = true)
     return plot
 end
 
-res = results(configs["srkf"]);
+res = results(configs["cakf"][4]);
 @unpack uᶠs = res
 plot_fstates(uᶠs; gt = true, cred_int = true)

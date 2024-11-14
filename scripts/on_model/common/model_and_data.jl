@@ -12,7 +12,20 @@ stsgmp = ComputationAwareKalman.SpaceTimeSeparableGaussMarkovProcess(
 ts = LinRange(temporal_domain..., Nₜ)
 xs = LinRange(spatial_domain..., Nₓ)
 
-gmp = ComputationAwareKalman.discretize(stsgmp, xs)
+spatial_cov_mat = ComputationAwareKalman.covariance_matrix(stsgmp.spatial_cov_fn, xs)
+
+lsqrt_benchmark = @benchmarkable sqrt(spatial_cov_mat)
+# tune!(lsqrt_benchmark)
+lsqrt_benchmark_trial, lsqrt_spatial_cov_mat = BenchmarkTools.run_result(lsqrt_benchmark)
+lsqrt_wall_time = median(lsqrt_benchmark_trial.times) / 1e9
+
+gmp = ComputationAwareKalman.SpatiallyDiscretizedSTSGMP(
+    stsgmp,
+    xs,
+    ComputationAwareKalman.mean_vector(stsgmp.spatial_mean_fn, xs),
+    spatial_cov_mat,
+    lsqrt_spatial_cov_mat,
+)
 
 H_all = kronecker(stsgmp.tgmp.H, I(Nₓ))
 

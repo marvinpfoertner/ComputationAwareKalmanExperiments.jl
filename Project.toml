@@ -37,5 +37,6 @@ WGLMakie = "276b4fcb-3e11-5398-bf8b-a0c2d153d008"
 WoodburyMatrices = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
 
 [compat]
+BenchmarkTools = "1.5.0"
 CUDA = "^5"
 julia = "1"
