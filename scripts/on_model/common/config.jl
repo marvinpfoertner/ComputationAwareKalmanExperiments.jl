@@ -30,8 +30,8 @@ matern_order_t = 2
 lₜ = 0.5
 σ² = 1.0
 
-lₓ = 1.5
-Σₓ = Matern52Kernel() ∘ ScaleTransform(1.0 / lₓ)
+lₓ = 0.5
+Σₓ = Matern32Kernel() ∘ ScaleTransform(1.0 / lₓ)
 
 # Discretization
 Nₜ = 100
