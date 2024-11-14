@@ -1,5 +1,5 @@
-ensemble_ranks = [4, 8, 16, 32, 64, 128]
-cakf_ranks = [1, 2, 4, 8, 16, 32, 64, 128]
+ensemble_ranks = 2 .^ (2:9)
+cakf_ranks = 2 .^ (0:9)
 seeds = 1:10
 
 configs = Dict(
