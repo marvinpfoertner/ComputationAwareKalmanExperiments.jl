@@ -10,6 +10,7 @@ using Statistics
 include("matfree/kernel_matrix.jl")
 include("matfree/restriction.jl")
 
+include("gmp/transition_model.jl")
 include("gmp/lti_sde.jl")
 include("gmp/matern.jl")
 
