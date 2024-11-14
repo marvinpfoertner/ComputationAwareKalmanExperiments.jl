@@ -45,3 +45,19 @@ function results(config::Dict)
 
     return results
 end
+
+function run_all()
+    results(configs["srkf"])
+
+    for algorithm in ["enkf", "etkf"]
+        for rank in ranks
+            for config in configs[algorithm][rank]
+                results(config)
+            end
+        end
+    end
+
+    for rank in ranks
+        results(configs["cakf"][rank])
+    end
+end
