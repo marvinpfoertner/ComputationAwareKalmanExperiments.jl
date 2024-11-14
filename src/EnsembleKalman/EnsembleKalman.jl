@@ -9,6 +9,7 @@ import ..ComputationAwareKalmanExperiments: SquareRootGaussian
 
 include("ensemble.jl")
 
+include("initialize.jl")
 include("predict.jl")
 include("update.jl")
 

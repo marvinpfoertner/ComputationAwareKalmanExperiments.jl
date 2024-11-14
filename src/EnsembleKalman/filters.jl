@@ -5,11 +5,8 @@ function enkf(
     rng::Random.AbstractRNG,
     rank::Integer,
 )
-    # Initialization
-    E₀ = hcat([rand(rng, dgmp, 0) for _ = 1:rank]...)
-    u₀ = ensemble_to_gaussian(E₀)
+    u₀ = initialize_sample(dgmp, rng = rng, rank = rank)
 
-    # Filter loop
     states = typeof(u₀)[]
     uₖ₋₁ = u₀
 
@@ -46,11 +43,8 @@ function etkf(
     rng::Random.AbstractRNG,
     rank::Integer,
 )
-    # Initialization
-    E₀ = hcat([rand(rng, dgmp, 0) for _ = 1:rank]...)
-    u₀ = ensemble_to_gaussian(E₀)
+    u₀ = initialize_sample(dgmp, rng = rng, rank = rank)
 
-    # Filter loop
     states = typeof(u₀)[]
     uₖ₋₁ = u₀
 
