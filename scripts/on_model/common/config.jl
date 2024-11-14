@@ -17,11 +17,15 @@ configs = Dict(
         Dict(rank => Dict("algorithm" => "cakf", "rank" => rank) for rank in ranks),
 )
 
-# Problem parameters
+#####################
+# Common parameters #
+#####################
+
+# Problem
 temporal_domain = (0.0, 5.0)
 spatial_domain = (-5.0, 5.0)
 
-# Dynamics parameters
+# Dynamics
 matern_order_t = 2
 lₜ = 0.5
 σ² = 1.0
@@ -33,10 +37,10 @@ lₓ = 1.5
 Nₜ = 100
 Nₓ = 1000
 
-# Measurement parameters
+# Measurement
 λ² = 0.1^2
 
-# Data parameters
+# Data
 data_seed = 2345
 
 Nₜ_train = 10
