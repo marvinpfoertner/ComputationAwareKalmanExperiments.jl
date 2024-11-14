@@ -1,5 +1,5 @@
 function results(config::Dict)
-    results, _ = produce_or_load(config, datadir("on_model"), prefix = "results") do config
+    results, _ = produce_or_load(config, datadir("on_model", "results")) do config
         @unpack algorithm = config
 
         if "seed" in keys(config)
@@ -40,10 +40,8 @@ function results(config::Dict)
             mean(ComputationAwareKalmanExperiments.gaussian_nll.(ustar, mean(uᶠ), var(uᶠ))) for (ustar, uᶠ) in zip(ustars, uᶠs)
         ])
 
-        return @strdict uᶠ mse expected_nll wall_time
+        return merge((@strdict uᶠs mse expected_nll wall_time), config)
     end
-
-    @info config["algorithm"] results["mse"] results["expected_nll"]
 
     return results
 end
