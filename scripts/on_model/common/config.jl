@@ -1,15 +1,17 @@
-ranks = [2, 4, 8, 16, 32, 64, 128]
-seed = 345698
+ranks = [4, 8, 16, 32, 64, 128]
+seeds = 1:10
 
 configs = Dict(
     "srkf" => Dict("algorithm" => "srkf"),
     "enkf" => Dict(
-        rank => Dict("algorithm" => "enkf", "rank" => rank, "seed" => seed) for
-        rank in ranks
+        rank => [
+            Dict("algorithm" => "enkf", "rank" => rank, "seed" => seed) for seed in seeds
+        ] for rank in ranks
     ),
     "etkf" => Dict(
-        rank => Dict("algorithm" => "etkf", "rank" => rank, "seed" => seed) for
-        rank in ranks
+        rank => [
+            Dict("algorithm" => "etkf", "rank" => rank, "seed" => seed) for seed in seeds
+        ] for rank in ranks
     ),
     "cakf" =>
         Dict(rank => Dict("algorithm" => "cakf", "rank" => rank) for rank in ranks),
