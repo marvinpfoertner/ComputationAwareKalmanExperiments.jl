@@ -13,8 +13,8 @@ function results(config::Dict)
                 $dgmp_aug,
                 $mmod,
                 $ys_train_aug,
-                $rng = rng,
-                $rank = config["rank"],
+                rng = $rng,
+                rank = $(config["rank"]),
             ) evals = 1
         elseif algorithm == "etkf"
             filter_benchmark = @benchmarkable EnsembleKalman.etkf(
@@ -22,14 +22,14 @@ function results(config::Dict)
                 $mmod,
                 $ys_train_aug,
                 rng = $rng,
-                rank = $config["rank"],
+                rank = $(config["rank"]),
             ) evals = 1
         elseif algorithm == "cakf"
             filter_benchmark = @benchmarkable cakf(
                 $dgmp,
                 $mmod,
                 $ys_train;
-                rank = $config["rank"],
+                rank = $(config["rank"]),
                 ts = $ts,
             ) evals = 1
         end
