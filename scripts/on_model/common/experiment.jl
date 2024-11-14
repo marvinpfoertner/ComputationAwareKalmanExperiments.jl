@@ -2,10 +2,6 @@ function results(config::Dict)
     results, _ = produce_or_load(config, datadir("on_model", "results")) do config
         @unpack algorithm = config
 
-        if "seed" in keys(config)
-            rng = Random.seed!(config["seed"])
-        end
-
         if algorithm == "srkf"
             filter_benchmark = @benchmarkable Kalman.srkf($dgmp_aug, $mmod, $ys_train_aug)
         elseif algorithm == "enkf"
@@ -13,7 +9,7 @@ function results(config::Dict)
                 $dgmp_aug,
                 $mmod,
                 $ys_train_aug,
-                rng = $rng,
+                rng = Random.seed!($config["seed"]),
                 rank = $(config["rank"]),
             ) evals = 1
         elseif algorithm == "etkf"
@@ -21,7 +17,7 @@ function results(config::Dict)
                 $dgmp_aug,
                 $mmod,
                 $ys_train_aug,
-                rng = $rng,
+                rng = Random.seed!($config["seed"]),
                 rank = $(config["rank"]),
             ) evals = 1
         elseif algorithm == "cakf"
@@ -64,14 +60,14 @@ function run_all()
     results(configs["srkf"])
 
     for algorithm in ["enkf", "etkf"]
-        for rank in ranks
+        for rank in ensemble_ranks
             for config in configs[algorithm][rank]
                 results(config)
             end
         end
     end
 
-    for rank in ranks
+    for rank in cakf_ranks
         results(configs["cakf"][rank])
     end
 end
