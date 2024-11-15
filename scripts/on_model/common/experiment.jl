@@ -13,11 +13,11 @@ function results(config::Dict)
                 rank = $(config["rank"]),
             ) evals = 1
         elseif algorithm == "etkf"
-            filter_benchmark = @benchmarkable EnsembleKalman.etkf(
-                $dgmp_aug,
+            filter_benchmark = @benchmarkable etkf(
+                $dgmp,
                 $mmod,
-                $ys_train_aug,
-                rng = Random.seed!($config["seed"]),
+                $ys_train,
+                $ts;
                 rank = $(config["rank"]),
             ) evals = 1
         elseif algorithm == "cakf"
@@ -44,7 +44,7 @@ function results(config::Dict)
 
         wall_time = median(benchmark_trial.times) / 1e9
 
-        if algorithm == "srkf" || algorithm == "enkf" || algorithm == "etkf"
+        if algorithm == "srkf" || algorithm == "enkf"
             # SRKF, EnKF, and ETKF need access to a square root of the process noise covariance,
             # which is precomputed before the filters are run.
             wall_time += lsqrt_wall_time
@@ -59,15 +59,19 @@ end
 function run_all()
     results(configs["srkf"])
 
-    for algorithm in ["enkf", "etkf"]
-        for rank in ensemble_ranks
+    # Stochastic algorithms
+    for algorithm in ["enkf"]
+        for rank in keys(configs[algorithm])
             for config in configs[algorithm][rank]
                 results(config)
             end
         end
     end
 
-    for rank in cakf_ranks
-        results(configs["cakf"][rank])
+    # Deterministic algorithms
+    for algorithm in ["etkf", "cakf"]
+        for rank in keys(configs[algorithm])
+            results(configs[algorithm][rank])
+        end
     end
 end

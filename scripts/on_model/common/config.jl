@@ -1,4 +1,5 @@
-ensemble_ranks = 2 .^ (2:9)
+enkf_ranks = 2 .^ (2:9)
+etkf_ranks = 3 .* 2 .^ (0:8)
 cakf_ranks = 2 .^ (0:9)
 seeds = 1:10
 
@@ -7,12 +8,10 @@ configs = Dict(
     "enkf" => Dict(
         rank => [
             Dict("algorithm" => "enkf", "rank" => rank, "seed" => seed) for seed in seeds
-        ] for rank in ensemble_ranks
+        ] for rank in enkf_ranks
     ),
     "etkf" => Dict(
-        rank => [
-            Dict("algorithm" => "etkf", "rank" => rank, "seed" => seed) for seed in seeds
-        ] for rank in ensemble_ranks
+        rank => Dict("algorithm" => "etkf", "rank" => rank) for rank in etkf_ranks
     ),
     "cakf" => Dict(
         rank => Dict("algorithm" => "cakf", "rank" => rank) for rank in cakf_ranks

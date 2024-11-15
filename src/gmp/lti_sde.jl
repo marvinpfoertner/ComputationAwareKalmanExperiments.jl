@@ -4,6 +4,9 @@ abstract type AbstractStationaryLTISDESolution <:
 function drift_matrix(::AbstractStationaryLTISDESolution) end
 function stationary_covariance(::AbstractStationaryLTISDESolution) end
 
+ComputationAwareKalman.statedim(gmp::AbstractStationaryLTISDESolution) =
+    size(stationary_covariance(gmp), 2)
+
 function ComputationAwareKalman.μ(gmp::AbstractStationaryLTISDESolution, t::AbstractFloat)
     F = drift_matrix(gmp)
     return zeros(promote_type(eltype(F), typeof(t)), size(F, 1))

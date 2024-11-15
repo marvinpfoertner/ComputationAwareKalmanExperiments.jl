@@ -40,31 +40,28 @@ function etkf(
     dgmp::ComputationAwareKalman.AbstractGaussMarkovChain,
     mmod::ComputationAwareKalman.AbstractMeasurementModel,
     ys;
-    rng::Random.AbstractRNG,
     rank::Integer,
+    truncate_kwargs = (;),
 )
-    u₀ = initialize_sample(dgmp, rng = rng, rank = rank)
+    u₀ = initialize_truncate(dgmp; rank = rank, truncate_kwargs = truncate_kwargs)
 
     states = typeof(u₀)[]
     uₖ₋₁ = u₀
 
     for (k, yₖ) in enumerate(ys)
-        u⁻ₖ = predict_sample_pointwise(
+        u⁻ₖ = predict_truncate(
             uₖ₋₁,
-            ComputationAwareKalman.A_b_lsqrt_Q(dgmp, k - 1)...,
-            rng,
+            ComputationAwareKalman.A_b_lsqrt_Q(dgmp, k - 1)...;
+            rank = rank,
+            truncate_kwargs = truncate_kwargs,
         )
 
-        if ismissing(yₖ)
-            uₖ = u⁻ₖ
-        else
-            uₖ = update_etkf(
-                u⁻ₖ,
-                yₖ,
-                ComputationAwareKalman.H(mmod, k),
-                ComputationAwareKalman.Λ(mmod, k),
-            )
-        end
+        uₖ = update_etkf(
+            u⁻ₖ,
+            yₖ,
+            ComputationAwareKalman.H(mmod, k),
+            ComputationAwareKalman.Λ(mmod, k),
+        )
 
         push!(states, uₖ)
         uₖ₋₁ = uₖ

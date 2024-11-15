@@ -26,6 +26,6 @@ function plot_fstates(uᶠs; gt = true, cred_int = true)
     return plot
 end
 
-res = results(configs["cakf"][4]);
+res = results(configs["etkf"][48]);
 @unpack uᶠs = res
 plot_fstates(uᶠs; gt = true, cred_int = true)

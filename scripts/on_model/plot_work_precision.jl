@@ -35,9 +35,9 @@ function collect_stochastic_metrics(algorithm)
 end
 
 metrics = Dict(
-    "srkf" => first(dropmissing(df[df.algorithm.=="srkf", [:mse, :expected_nll]])),
+    "srkf" => dropmissing(df[df.algorithm.=="srkf", [:mse, :expected_nll, :wall_time]]),
     "enkf" => collect_stochastic_metrics("enkf"),
-    "etkf" => collect_stochastic_metrics("etkf"),
+    "etkf" => collect_deterministic_metrics("etkf"),
     "cakf" => collect_deterministic_metrics("cakf"),
 )
 
@@ -75,20 +75,8 @@ with_theme(T) do
     ax_nll =
         Axis(fig[2, 1], xlabel = "Wall Time [s]", ylabel = "Expected NLL", xscale = log10)
 
-    hlines!(
-        ax_mse,
-        [metrics["srkf"].mse],
-        label = alg2label["srkf"],
-        color = alg2color["srkf"],
-    )
-    hlines!(
-        ax_nll,
-        [metrics["srkf"].expected_nll],
-        label = alg2label["srkf"],
-        color = alg2color["srkf"],
-    )
-
-    for alg in ["enkf", "etkf"]
+    # Stochastic algorithms
+    for alg in ["enkf"]
         errorbars!(
             ax_mse,
             metrics[alg].wall_time,
@@ -126,21 +114,24 @@ with_theme(T) do
         )
     end
 
-    scatterlines!(
-        ax_mse,
-        metrics["cakf"].wall_time,
-        metrics["cakf"].mse,
-        label = alg2label["cakf"],
-        color = alg2color["cakf"],
-    )
+    # Deterministic algorithms
+    for alg in ["etkf", "cakf", "srkf"]
+        scatterlines!(
+            ax_mse,
+            metrics[alg].wall_time,
+            metrics[alg].mse,
+            label = alg2label[alg],
+            color = alg2color[alg],
+        )
 
-    scatterlines!(
-        ax_nll,
-        metrics["cakf"].wall_time,
-        metrics["cakf"].expected_nll,
-        label = alg2label["cakf"],
-        color = alg2color["cakf"],
-    )
+        scatterlines!(
+            ax_nll,
+            metrics[alg].wall_time,
+            metrics[alg].expected_nll,
+            label = alg2label[alg],
+            color = alg2color[alg],
+        )
+    end
 
     axislegend(ax_mse)
     axislegend(ax_nll)
@@ -148,7 +139,9 @@ with_theme(T) do
     linkxaxes!(ax_mse, ax_nll)
 
     ylims!(ax_mse; low = 5e0, high = 5e2)
-    ylims!(ax_nll; low = -200, high = 2e4)
+    ylims!(ax_nll; low = -300, high = 8e3)
+
+    # ylims!(ax_nll; low=1.68, high=2)
 
     safesave(
         plotsdir("on_model", "work_precision.pdf"),
