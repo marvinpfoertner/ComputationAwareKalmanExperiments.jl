@@ -62,12 +62,15 @@ alg2label = Dict("srkf" => "SRKF", "enkf" => "EnKF", "etkf" => "ETKF", "cakf" =>
 alg2color = Dict("srkf" => :black, "enkf" => :blue, "etkf" => :green, "cakf" => :red)
 whisker_width = 4
 
-with_theme(T) do
+function work_precision_wall_time(;
+    stochastic_algorithms = ["enkf"],
+    deterministic_algorithms = ["etkf", "cakf", "srkf"],
+)
     fig = Figure()
 
     ax_mse = Axis(
         fig[1, 1],
-        # xlabel = "Wall Time [s]",
+        xlabel = "Wall Time [s]",
         ylabel = "MSE",
         xscale = log10,
         yscale = log10,
@@ -76,7 +79,7 @@ with_theme(T) do
         Axis(fig[2, 1], xlabel = "Wall Time [s]", ylabel = "Expected NLL", xscale = log10)
 
     # Stochastic algorithms
-    for alg in ["enkf"]
+    for alg in stochastic_algorithms
         errorbars!(
             ax_mse,
             metrics[alg].wall_time,
@@ -115,7 +118,7 @@ with_theme(T) do
     end
 
     # Deterministic algorithms
-    for alg in ["etkf", "cakf", "srkf"]
+    for alg in deterministic_algorithms
         scatterlines!(
             ax_mse,
             metrics[alg].wall_time,
@@ -138,16 +141,34 @@ with_theme(T) do
 
     linkxaxes!(ax_mse, ax_nll)
 
-    ylims!(ax_mse; low = 5e0, high = 5e2)
-    ylims!(ax_nll; low = -300, high = 8e3)
+    return (fig = fig, ax_mse = ax_mse, ax_nll = ax_nll)
+end
 
-    # ylims!(ax_nll; low=1.68, high=2)
+with_theme(T) do
+    plot = work_precision_wall_time()
+
+    ylims!(plot.ax_mse; low = 5e0, high = 5e2)
+    ylims!(plot.ax_nll; low = -300, high = 8e3)
 
     safesave(
-        plotsdir("on_model", "work_precision.pdf"),
-        fig,
+        plotsdir("on_model", "work_precision_wall_time.pdf"),
+        plot.fig,
         # update = false
     )
 
-    fig
+    plot.fig
+end
+
+with_theme(T) do
+    plot = work_precision_wall_time(stochastic_algorithms = [])
+
+    ylims!(plot.ax_nll; low = 1.68, high = 2)
+
+    safesave(
+        plotsdir("on_model", "work_precision_wall_time_no_enkf.pdf"),
+        plot.fig,
+        # update = false
+    )
+
+    plot.fig
 end
