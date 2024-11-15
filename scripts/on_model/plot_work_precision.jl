@@ -37,6 +37,7 @@ function collect_stochastic_metrics(algorithm)
 end
 
 metrics = Dict(
+    "kf" => dropmissing(df[df.algorithm.=="kf", [:mse, :expected_nll, :wall_time]]),
     "srkf" => dropmissing(df[df.algorithm.=="srkf", [:mse, :expected_nll, :wall_time]]),
     "enkf" => collect_stochastic_metrics("enkf"),
     "etkf" => collect_deterministic_metrics("etkf"),
@@ -73,8 +74,20 @@ mse_yscale = log10
 nll_label = "Expected NLL"
 nll_yscale = identity
 
-alg2label = Dict("srkf" => "SRKF", "enkf" => "EnKF", "etkf" => "ETKF", "cakf" => "CAKF")
-alg2color = Dict("srkf" => :green, "enkf" => :orange, "etkf" => :blue, "cakf" => :red)
+alg2label = Dict(
+    "kf" => "KF",
+    "srkf" => "SRKF",
+    "enkf" => "EnKF",
+    "etkf" => "ETKF",
+    "cakf" => "CAKF",
+)
+alg2color = Dict(
+    "kf" => :violet,
+    "srkf" => :green,
+    "enkf" => :orange,
+    "etkf" => :blue,
+    "cakf" => :red,
+)
 
 function scatter_stochastic_metric!(
     ax,
@@ -104,7 +117,7 @@ end
 
 function work_precision_wall_time(;
     stochastic_algorithms = ["enkf"],
-    deterministic_algorithms = ["etkf", "cakf", "srkf"],
+    deterministic_algorithms = ["etkf", "cakf", "kf", "srkf"],
 )
     fig = Figure()
 
@@ -176,8 +189,8 @@ end
 with_theme(T) do
     plot = work_precision_wall_time()
 
-    ylims!(plot.ax_mse; low = 6e0, high = 5e2)
-    ylims!(plot.ax_nll; low = -300, high = 8e3)
+    # ylims!(plot.ax_mse; low = 6e0, high = 5e2)
+    # ylims!(plot.ax_nll; low = -300, high = 8e3)
 
     safesave(plotsdir("on_model", "work_precision_wall_time.pdf"), plot.fig)
 
@@ -187,7 +200,7 @@ end
 with_theme(T) do
     plot = work_precision_wall_time(stochastic_algorithms = [])
 
-    ylims!(plot.ax_nll; low = 1.68, high = 2)
+    ylims!(plot.ax_nll; low = 1.2, high = 2)
 
     safesave(plotsdir("on_model", "work_precision_wall_time_no_enkf.pdf"), plot.fig)
 
@@ -195,9 +208,9 @@ with_theme(T) do
 end
 
 function work_precision_rank(;
+    kfs = ["kf"],
     stochastic_algorithms = ["enkf"],
     deterministic_algorithms = ["etkf", "cakf"],
-    show_srkf = true,
 )
     fig = Figure()
 
@@ -216,18 +229,13 @@ function work_precision_rank(;
         yscale = nll_yscale,
     )
 
-    if show_srkf
-        hlines!(
-            ax_mse,
-            metrics["srkf"].mse,
-            label = alg2label["srkf"],
-            color = alg2color["srkf"],
-        )
+    for alg in kfs
+        hlines!(ax_mse, metrics[alg].mse, label = alg2label[alg], color = alg2color[alg])
         hlines!(
             ax_nll,
-            metrics["srkf"].expected_nll,
-            label = alg2label["srkf"],
-            color = alg2color["srkf"],
+            metrics[alg].expected_nll,
+            label = alg2label[alg],
+            color = alg2color[alg],
         )
     end
 
@@ -285,8 +293,8 @@ end
 with_theme(T) do
     plot = work_precision_rank()
 
-    ylims!(plot.ax_mse; low = 5e0, high = 5e2)
-    ylims!(plot.ax_nll; low = -300, high = 8e3)
+    # ylims!(plot.ax_mse; low = 5e0, high = 5e2)
+    # ylims!(plot.ax_nll; low = -300, high = 8e3)
 
     safesave(plotsdir("on_model", "work_precision_rank.pdf"), plot.fig)
 
@@ -296,7 +304,7 @@ end
 with_theme(T) do
     plot = work_precision_rank(stochastic_algorithms = [])
 
-    ylims!(plot.ax_nll; low = 1.68, high = 2)
+    ylims!(plot.ax_nll; low = 1.2, high = 2)
 
     safesave(plotsdir("on_model", "work_precision_rank_no_enkf.pdf"), plot.fig)
 
