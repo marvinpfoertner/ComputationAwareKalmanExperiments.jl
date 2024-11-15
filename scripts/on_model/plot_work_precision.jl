@@ -58,9 +58,23 @@ T = Theme(
     ncols = 1,
 )
 
+# Plot parameters
+rank_label = "Rank"
+rank_xscale = log2
+
+wall_time_label = "Wall Time [s]"
+wall_time_xscale = log10
+
+mse_label = "MSE"
+mse_yscale = log10
+
+nll_label = "Expected NLL"
+nll_yscale = identity
+
+error_whisker_width = 4
+
 alg2label = Dict("srkf" => "SRKF", "enkf" => "EnKF", "etkf" => "ETKF", "cakf" => "CAKF")
-alg2color = Dict("srkf" => :black, "enkf" => :blue, "etkf" => :green, "cakf" => :red)
-whisker_width = 4
+alg2color = Dict("srkf" => :green, "enkf" => :orange, "etkf" => :blue, "cakf" => :red)
 
 function work_precision_wall_time(;
     stochastic_algorithms = ["enkf"],
@@ -70,13 +84,18 @@ function work_precision_wall_time(;
 
     ax_mse = Axis(
         fig[1, 1],
-        xlabel = "Wall Time [s]",
-        ylabel = "MSE",
-        xscale = log10,
-        yscale = log10,
+        xlabel = wall_time_label,
+        xscale = wall_time_xscale,
+        ylabel = mse_label,
+        yscale = mse_yscale,
     )
-    ax_nll =
-        Axis(fig[2, 1], xlabel = "Wall Time [s]", ylabel = "Expected NLL", xscale = log10)
+    ax_nll = Axis(
+        fig[2, 1],
+        xlabel = wall_time_label,
+        xscale = wall_time_xscale,
+        ylabel = nll_label,
+        yscale = nll_yscale,
+    )
 
     # Stochastic algorithms
     for alg in stochastic_algorithms
@@ -87,7 +106,7 @@ function work_precision_wall_time(;
             metrics[alg].mse_25,
             metrics[alg].mse_75;
             color = alg2color[alg],
-            whiskerwidth = whisker_width,
+            whiskerwidth = error_whisker_width,
         )
 
         scatterlines!(
@@ -105,7 +124,7 @@ function work_precision_wall_time(;
             metrics[alg].expected_nll_25,
             metrics[alg].expected_nll_75;
             color = alg2color[alg],
-            whiskerwidth = whisker_width,
+            whiskerwidth = error_whisker_width,
         )
 
         scatterlines!(
@@ -150,11 +169,7 @@ with_theme(T) do
     ylims!(plot.ax_mse; low = 5e0, high = 5e2)
     ylims!(plot.ax_nll; low = -300, high = 8e3)
 
-    safesave(
-        plotsdir("on_model", "work_precision_wall_time.pdf"),
-        plot.fig,
-        # update = false
-    )
+    safesave(plotsdir("on_model", "work_precision_wall_time.pdf"), plot.fig)
 
     plot.fig
 end
@@ -164,11 +179,132 @@ with_theme(T) do
 
     ylims!(plot.ax_nll; low = 1.68, high = 2)
 
-    safesave(
-        plotsdir("on_model", "work_precision_wall_time_no_enkf.pdf"),
-        plot.fig,
-        # update = false
+    safesave(plotsdir("on_model", "work_precision_wall_time_no_enkf.pdf"), plot.fig)
+
+    plot.fig
+end
+
+function work_precision_rank(;
+    stochastic_algorithms = ["enkf"],
+    deterministic_algorithms = ["etkf", "cakf"],
+    show_srkf = true,
+)
+    fig = Figure()
+
+    ax_mse = Axis(
+        fig[1, 1],
+        xlabel = rank_label,
+        xscale = rank_xscale,
+        ylabel = mse_label,
+        yscale = mse_yscale,
     )
+    ax_nll = Axis(
+        fig[2, 1],
+        xlabel = rank_label,
+        xscale = rank_xscale,
+        ylabel = nll_label,
+        yscale = nll_yscale,
+    )
+
+    if show_srkf
+        hlines!(
+            ax_mse,
+            metrics["srkf"].mse,
+            label = alg2label["srkf"],
+            color = alg2color["srkf"],
+        )
+        hlines!(
+            ax_nll,
+            metrics["srkf"].expected_nll,
+            label = alg2label["srkf"],
+            color = alg2color["srkf"],
+        )
+    end
+
+    # Stochastic algorithms
+    for alg in stochastic_algorithms
+        errorbars!(
+            ax_mse,
+            metrics[alg].rank,
+            metrics[alg].mse_median,
+            metrics[alg].mse_25,
+            metrics[alg].mse_75;
+            color = alg2color[alg],
+            whiskerwidth = error_whisker_width,
+        )
+
+        scatterlines!(
+            ax_mse,
+            metrics[alg].rank,
+            metrics[alg].mse_median,
+            label = alg2label[alg],
+            color = alg2color[alg],
+        )
+
+        errorbars!(
+            ax_nll,
+            metrics[alg].rank,
+            metrics[alg].expected_nll_median,
+            metrics[alg].expected_nll_25,
+            metrics[alg].expected_nll_75;
+            color = alg2color[alg],
+            whiskerwidth = error_whisker_width,
+        )
+
+        scatterlines!(
+            ax_nll,
+            metrics[alg].rank,
+            metrics[alg].expected_nll_median,
+            label = alg2label[alg],
+            color = alg2color[alg],
+        )
+    end
+
+    # Deterministic algorithms
+    for alg in deterministic_algorithms
+        scatterlines!(
+            ax_mse,
+            metrics[alg].rank,
+            metrics[alg].mse,
+            label = alg2label[alg],
+            color = alg2color[alg],
+        )
+
+        scatterlines!(
+            ax_nll,
+            metrics[alg].rank,
+            metrics[alg].expected_nll,
+            label = alg2label[alg],
+            color = alg2color[alg],
+        )
+    end
+
+    axislegend(ax_mse)
+    axislegend(ax_nll)
+
+    linkxaxes!(ax_mse, ax_nll)
+    hidexdecorations!(ax_mse; ticks = false, grid = false)
+
+    return (fig = fig, ax_mse = ax_mse, ax_nll = ax_nll)
+end
+
+with_theme(T) do
+    plot = work_precision_rank()
+
+    ylims!(plot.ax_mse; low = 5e0, high = 5e2)
+    ylims!(plot.ax_nll; low = -300, high = 8e3)
+
+    safesave(plotsdir("on_model", "work_precision_rank.pdf"), plot.fig)
+
+    plot.fig
+end
+
+with_theme(T) do
+    plot = work_precision_rank(stochastic_algorithms = [])
+
+    ylims!(plot.ax_nll; low = 1.68, high = 2)
+
+    safesave(plotsdir("on_model", "work_precision_rank_no_enkf.pdf"), plot.fig)
 
     plot.fig
 end
