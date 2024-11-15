@@ -1,5 +1,5 @@
 enkf_ranks = 2 .^ (2:9)
-etkf_ranks = 3 .* 2 .^ (0:8)
+etkf_ranks = 2 .^ (1:9)
 cakf_ranks = 2 .^ (0:9)
 seeds = 1:10
 
@@ -28,7 +28,7 @@ temporal_domain = (0.0, 5.0)
 spatial_domain = (-5.0, 5.0)
 
 # Dynamics
-matern_order_t = 2
+matern_order_t = 1
 lₜ = 0.5
 σ² = 1.0
 
