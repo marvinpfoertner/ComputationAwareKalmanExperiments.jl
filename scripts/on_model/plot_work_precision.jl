@@ -24,12 +24,12 @@ function collect_stochastic_metrics(algorithm)
         groupby(df_algo, :rank),
         :mse => Ref => :mses,
         :mse => median,
-        :mse => (v -> quantile(v, 0.25)) => :mse_25,
-        :mse => (v -> quantile(v, 0.75)) => :mse_75,
+        # :mse => (v -> quantile(v, 0.25)) => :mse_25,
+        # :mse => (v -> quantile(v, 0.75)) => :mse_75,
         :expected_nll => Ref => :expected_nlls,
         :expected_nll => median,
-        :expected_nll => (v -> quantile(v, 0.25)) => :expected_nll_25,
-        :expected_nll => (v -> quantile(v, 0.75)) => :expected_nll_75,
+        # :expected_nll => (v -> quantile(v, 0.25)) => :expected_nll_25,
+        # :expected_nll => (v -> quantile(v, 0.75)) => :expected_nll_75,
         :wall_time => median => :wall_time,
     )
 
