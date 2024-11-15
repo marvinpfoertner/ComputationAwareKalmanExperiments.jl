@@ -22,9 +22,11 @@ function collect_stochastic_metrics(algorithm)
     )
     df_metric_stats = combine(
         groupby(df_algo, :rank),
+        :mse => Ref => :mses,
         :mse => median,
         :mse => (v -> quantile(v, 0.25)) => :mse_25,
         :mse => (v -> quantile(v, 0.75)) => :mse_75,
+        :expected_nll => Ref => :expected_nlls,
         :expected_nll => median,
         :expected_nll => (v -> quantile(v, 0.25)) => :expected_nll_25,
         :expected_nll => (v -> quantile(v, 0.75)) => :expected_nll_75,
@@ -76,6 +78,32 @@ error_whisker_width = 4
 alg2label = Dict("srkf" => "SRKF", "enkf" => "EnKF", "etkf" => "ETKF", "cakf" => "CAKF")
 alg2color = Dict("srkf" => :green, "enkf" => :orange, "etkf" => :blue, "cakf" => :red)
 
+function scatter_stochastic_metric!(
+    ax,
+    x_col::String,
+    metric_col::String;
+    algorithm::String = "enkf",
+    markersize = 5,
+    color = alg2color[algorithm],
+    alpha = 0.5,
+    scatter_kwargs...,
+)
+    scatter!(
+        ax,
+        vcat(
+            [
+                repeat([x], length(metrics[algorithm][i, metric_col])) for
+                (i, x) in enumerate(metrics[algorithm][:, x_col])
+            ]...,
+        ),
+        vcat(metrics[algorithm][:, metric_col]...),
+        markersize = markersize,
+        color = color,
+        alpha = alpha,
+        scatter_kwargs...,
+    )
+end
+
 function work_precision_wall_time(;
     stochastic_algorithms = ["enkf"],
     deterministic_algorithms = ["etkf", "cakf", "srkf"],
@@ -99,15 +127,7 @@ function work_precision_wall_time(;
 
     # Stochastic algorithms
     for alg in stochastic_algorithms
-        errorbars!(
-            ax_mse,
-            metrics[alg].wall_time,
-            metrics[alg].mse_median,
-            metrics[alg].mse_25,
-            metrics[alg].mse_75;
-            color = alg2color[alg],
-            whiskerwidth = error_whisker_width,
-        )
+        scatter_stochastic_metric!(ax_mse, "wall_time", "mses"; algorithm = alg)
 
         scatterlines!(
             ax_mse,
@@ -117,15 +137,7 @@ function work_precision_wall_time(;
             color = alg2color[alg],
         )
 
-        errorbars!(
-            ax_nll,
-            metrics[alg].wall_time,
-            metrics[alg].expected_nll_median,
-            metrics[alg].expected_nll_25,
-            metrics[alg].expected_nll_75;
-            color = alg2color[alg],
-            whiskerwidth = error_whisker_width,
-        )
+        scatter_stochastic_metric!(ax_nll, "wall_time", "expected_nlls"; algorithm = alg)
 
         scatterlines!(
             ax_nll,
@@ -223,15 +235,7 @@ function work_precision_rank(;
 
     # Stochastic algorithms
     for alg in stochastic_algorithms
-        errorbars!(
-            ax_mse,
-            metrics[alg].rank,
-            metrics[alg].mse_median,
-            metrics[alg].mse_25,
-            metrics[alg].mse_75;
-            color = alg2color[alg],
-            whiskerwidth = error_whisker_width,
-        )
+        scatter_stochastic_metric!(ax_mse, "rank", "mses"; algorithm = alg)
 
         scatterlines!(
             ax_mse,
@@ -241,15 +245,7 @@ function work_precision_rank(;
             color = alg2color[alg],
         )
 
-        errorbars!(
-            ax_nll,
-            metrics[alg].rank,
-            metrics[alg].expected_nll_median,
-            metrics[alg].expected_nll_25,
-            metrics[alg].expected_nll_75;
-            color = alg2color[alg],
-            whiskerwidth = error_whisker_width,
-        )
+        scatter_stochastic_metric!(ax_nll, "rank", "expected_nlls"; algorithm = alg)
 
         scatterlines!(
             ax_nll,
