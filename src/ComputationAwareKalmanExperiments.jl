@@ -15,9 +15,9 @@ include("gmp/kronecker.jl")
 include("gmp/lti_sde.jl")
 include("gmp/matern.jl")
 
+include("gaussians.jl")
 include("metrics.jl")
 include("sphere_utils.jl")
-include("square_root_gaussian.jl")
 
 include("Kalman/Kalman.jl")
 include("EnsembleKalman/EnsembleKalman.jl")

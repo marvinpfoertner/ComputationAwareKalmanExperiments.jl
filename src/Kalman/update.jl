@@ -1,3 +1,13 @@
+function update(u⁻::Gaussian, y::AbstractVector, H::AbstractMatrix, Λ::AbstractMatrix)
+    S = hermitianpart!(H * u⁻.P * H' + Λ)
+    K = u⁻.P * (H' / S)
+
+    m = u⁻.m + K * (y - H * u⁻.m)
+    P = u⁻.P - K * H * u⁻.P
+
+    return Gaussian(m, P)
+end
+
 function update(
     u⁻::SquareRootGaussian,
     y::AbstractVector,

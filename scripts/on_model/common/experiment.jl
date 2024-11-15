@@ -2,7 +2,9 @@ function results(config::Dict)
     results, _ = produce_or_load(config, datadir("on_model", "results")) do config
         @unpack algorithm = config
 
-        if algorithm == "srkf"
+        if algorithm == "kf"
+            filter_benchmark = @benchmarkable kf($dgmp, $mmod, $ys_train, $ts) evals = 1
+        elseif algorithm == "srkf"
             filter_benchmark = @benchmarkable Kalman.srkf($dgmp_aug, $mmod, $ys_train_aug)
         elseif algorithm == "enkf"
             filter_benchmark = @benchmarkable EnsembleKalman.enkf(

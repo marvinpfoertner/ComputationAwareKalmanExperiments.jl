@@ -1,3 +1,14 @@
+function kf(
+    gmc::ComputationAwareKalman.AbstractGaussMarkovChain,
+    mmod::ComputationAwareKalman.AbstractMeasurementModel,
+    ys,
+    ts,
+)
+    uᶠs_train = Kalman.kf(gmc, mmod, ys)
+
+    return [Kalman.interpolate(gmc, uᶠs_train, t) for t in ts]
+end
+
 function cakf(
     dgmp::ComputationAwareKalman.AbstractGaussMarkovChain,
     mmod::ComputationAwareKalman.AbstractMeasurementModel,

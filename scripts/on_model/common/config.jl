@@ -4,6 +4,7 @@ cakf_ranks = 2 .^ (0:9)
 seeds = 1:10
 
 configs = Dict(
+    "kf" => Dict("algorithm" => "kf"),
     "srkf" => Dict("algorithm" => "srkf"),
     "enkf" => Dict(
         rank => [

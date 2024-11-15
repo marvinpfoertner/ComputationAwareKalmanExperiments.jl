@@ -4,12 +4,15 @@ using ComputationAwareKalman
 using LinearAlgebra
 using Statistics
 
-import ..ComputationAwareKalmanExperiments: SquareRootGaussian
+using ..ComputationAwareKalmanExperiments
+import ..ComputationAwareKalmanExperiments: Gaussian, SquareRootGaussian
 
 include("predict.jl")
 include("update.jl")
 
 include("filters.jl")
+
+include("interpolate.jl")
 
 end
 
