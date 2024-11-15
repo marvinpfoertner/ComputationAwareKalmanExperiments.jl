@@ -28,3 +28,32 @@ function predict_truncate(
 
     return SquareRootGaussian(A * u.m + b, Z⁻)
 end
+
+function predict_lanczos(
+    u::SquareRootGaussian,
+    A::AbstractMatrix,
+    b::AbstractVector,
+    Q::AbstractMatrix;
+    rng::Random.AbstractRNG,
+    rank::Integer = size(u.Z, 2),
+)
+    AZ = A * u.Z
+
+    # Low-rank approximation of left square root of predictive covariance
+    initvec = randn(rng, size(AZ, 1))
+    # initvec = mean(AZ, dims = 2)[:, 1]
+
+    eigvals, eigvecs, _ = KrylovKit.eigsolve(
+        x -> AZ * (AZ' * x) + Q * x,
+        initvec,
+        rank,
+        :LM;
+        krylovdim = max(KrylovDefaults.krylovdim, rank),
+        orth = KrylovKit.ClassicalGramSchmidt2(),
+        issymmetric = true,
+    )
+
+    Z⁻ = hcat(eigvecs...) * Diagonal(sqrt.(eigvals))
+
+    return SquareRootGaussian(A * u.m + b, Z⁻)
+end
