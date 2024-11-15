@@ -1,9 +1,9 @@
 using DrWatson
 @quickactivate "ComputationAwareKalmanExperiments"
 
-include("common.jl")
+include("common.jl")  # TODO: Get rid of this import
 
-# run_all()
+run_all()
 
 # Collect metrics
 using DataFrames
@@ -72,8 +72,6 @@ mse_yscale = log10
 
 nll_label = "Expected NLL"
 nll_yscale = identity
-
-error_whisker_width = 4
 
 alg2label = Dict("srkf" => "SRKF", "enkf" => "EnKF", "etkf" => "ETKF", "cakf" => "CAKF")
 alg2color = Dict("srkf" => :green, "enkf" => :orange, "etkf" => :blue, "cakf" => :red)
