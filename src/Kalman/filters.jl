@@ -46,16 +46,12 @@ function srkf(
     for (k, yₖ) in enumerate(ys)
         u⁻ₖ = predict(uₖ₋₁, ComputationAwareKalman.A_b_lsqrt_Q(dgmp, k - 1)...)
 
-        if ismissing(yₖ)
-            uₖ = u⁻ₖ
-        else
-            uₖ = update(
-                u⁻ₖ,
-                yₖ,
-                ComputationAwareKalman.H(mmod, k),
-                ComputationAwareKalman.lsqrt_Λ(mmod, k),
-            )
-        end
+        uₖ = update(
+            u⁻ₖ,
+            yₖ,
+            ComputationAwareKalman.H(mmod, k),
+            ComputationAwareKalman.lsqrt_Λ(mmod, k),
+        )
 
         push!(states, uₖ)
         uₖ₋₁ = uₖ

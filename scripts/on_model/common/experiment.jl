@@ -5,7 +5,7 @@ function results(config::Dict)
         if algorithm == "kf"
             filter_benchmark = @benchmarkable kf($dgmp, $mmod, $ys_train, $ts) evals = 1
         elseif algorithm == "srkf"
-            filter_benchmark = @benchmarkable Kalman.srkf($dgmp_aug, $mmod, $ys_train_aug)
+            filter_benchmark = @benchmarkable srkf($dgmp, $mmod, $ys_train, $ts) evals = 1
         elseif algorithm == "enkf"
             filter_benchmark = @benchmarkable EnsembleKalman.enkf(
                 $dgmp_aug,
@@ -26,9 +26,9 @@ function results(config::Dict)
             filter_benchmark = @benchmarkable cakf(
                 $dgmp,
                 $mmod,
-                $ys_train;
+                $ys_train,
+                $ts;
                 rank = $(config["rank"]),
-                ts = $ts,
             ) evals = 1
         end
 
@@ -47,7 +47,7 @@ function results(config::Dict)
         wall_time = median(benchmark_trial.times) / 1e9
 
         if algorithm == "srkf" || algorithm == "enkf"
-            # SRKF, EnKF, and ETKF need access to a square root of the process noise covariance,
+            # SRKF and EnKF need access to a square root of the process noise covariance,
             # which is precomputed before the filters are run.
             wall_time += lsqrt_wall_time
         end
@@ -59,7 +59,10 @@ function results(config::Dict)
 end
 
 function run_all()
-    results(configs["srkf"])
+    # Dense Kalman filters
+    for algorithm in ["kf", "srkf"]
+        results(configs[algorithm])
+    end
 
     # Stochastic algorithms
     for algorithm in ["enkf"]

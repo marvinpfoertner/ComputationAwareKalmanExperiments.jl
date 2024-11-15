@@ -9,22 +9,15 @@ function kf(
     return [Kalman.interpolate(gmc, uᶠs_train, t) for t in ts]
 end
 
-function cakf(
-    dgmp::ComputationAwareKalman.AbstractGaussMarkovChain,
+function srkf(
+    gmc::ComputationAwareKalman.AbstractGaussMarkovChain,
     mmod::ComputationAwareKalman.AbstractMeasurementModel,
-    ys;
-    rank::Integer,
+    ys,
     ts,
 )
-    fcache = ComputationAwareKalman.filter(
-        dgmp,
-        mmod,
-        ys;
-        update_kwargs = (max_iter = rank,),
-        truncate_kwargs = (max_cols = rank,),
-    )
+    uᶠs_train = Kalman.srkf(gmc, mmod, ys)
 
-    return [ComputationAwareKalman.interpolate(dgmp, fcache, t) for t in ts]
+    return [Kalman.interpolate(gmc, uᶠs_train, t) for t in ts]
 end
 
 function etkf(
@@ -42,7 +35,7 @@ function etkf(
     dgmp_trunc = ComputationAwareKalman.discretize(gmp_trunc, dgmp.ts)
 
     # Filter
-    uᶠs = EnsembleKalman.etkf(
+    uᶠs_train = EnsembleKalman.etkf(
         dgmp_trunc,
         mmod,
         ys;
@@ -54,10 +47,28 @@ function etkf(
     return [
         EnsembleKalman.interpolate_truncate(
             dgmp_trunc,
-            uᶠs,
+            uᶠs_train,
             t;
             rank = rank,
             truncate_kwargs = truncate_kwargs,
         ) for t in ts
     ]
+end
+
+function cakf(
+    gmc::ComputationAwareKalman.AbstractGaussMarkovChain,
+    mmod::ComputationAwareKalman.AbstractMeasurementModel,
+    ys,
+    ts;
+    rank::Integer,
+)
+    fcache = ComputationAwareKalman.filter(
+        gmc,
+        mmod,
+        ys;
+        update_kwargs = (max_iter = rank,),
+        truncate_kwargs = (max_cols = rank,),
+    )
+
+    return [ComputationAwareKalman.interpolate(gmc, fcache, t) for t in ts]
 end
