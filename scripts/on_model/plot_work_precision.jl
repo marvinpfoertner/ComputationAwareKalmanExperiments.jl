@@ -176,7 +176,7 @@ end
 with_theme(T) do
     plot = work_precision_wall_time()
 
-    ylims!(plot.ax_mse; low = 5e0, high = 5e2)
+    ylims!(plot.ax_mse; low = 6e0, high = 5e2)
     ylims!(plot.ax_nll; low = -300, high = 8e3)
 
     safesave(plotsdir("on_model", "work_precision_wall_time.pdf"), plot.fig)
