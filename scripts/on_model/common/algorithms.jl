@@ -94,7 +94,7 @@ function cakf(
 end
 
 function etkf_lanczos(
-    dgmp::ComputationAwareKalman.AbstractGaussMarkovChain,
+    dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
     mmod::ComputationAwareKalman.AbstractMeasurementModel,
     ys,
     ts;
