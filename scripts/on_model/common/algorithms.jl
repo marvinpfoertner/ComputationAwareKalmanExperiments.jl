@@ -1,23 +1,44 @@
 function kf(
-    gmc::ComputationAwareKalman.AbstractGaussMarkovChain,
+    dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
     mmod::ComputationAwareKalman.AbstractMeasurementModel,
     ys,
     ts,
 )
-    uᶠs_train = Kalman.kf(gmc, mmod, ys)
+    filter_states_data = Kalman.kf(dgmp, mmod, ys)
 
-    return [Kalman.interpolate(gmc, uᶠs_train, t) for t in ts]
+    return [Kalman.interpolate(dgmp, filter_states_data, t) for t in ts]
 end
 
 function srkf(
-    gmc::ComputationAwareKalman.AbstractGaussMarkovChain,
+    dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
     mmod::ComputationAwareKalman.AbstractMeasurementModel,
     ys,
     ts,
 )
-    uᶠs_train = Kalman.srkf(gmc, mmod, ys)
+    filter_states_data = Kalman.srkf(dgmp, mmod, ys)
 
-    return [Kalman.interpolate(gmc, uᶠs_train, t) for t in ts]
+    return [Kalman.interpolate(dgmp, filter_states_data, t) for t in ts]
+end
+
+function enkf(
+    dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
+    mmod::ComputationAwareKalman.AbstractMeasurementModel,
+    ys,
+    ts;
+    rng::Random.AbstractRNG,
+    rank::Integer,
+)
+    filter_states_data = EnsembleKalman.enkf(dgmp, mmod, ys; rng = rng, rank = rank)
+
+    # Interpolate
+    return [
+        EnsembleKalman.interpolate(
+            dgmp.gmp,
+            ComputationAwareKalman.ts(dgmp),
+            filter_states_data,
+            t,
+        ) for t in ts
+    ]
 end
 
 function etkf(
@@ -35,7 +56,7 @@ function etkf(
     dgmp_trunc = ComputationAwareKalman.discretize(gmp_trunc, dgmp.ts)
 
     # Filter
-    uᶠs_train = EnsembleKalman.etkf(
+    filter_states_data = EnsembleKalman.etkf(
         dgmp_trunc,
         mmod,
         ys;
@@ -45,12 +66,11 @@ function etkf(
 
     # Interpolate
     return [
-        EnsembleKalman.interpolate_truncate(
+        EnsembleKalman.interpolate(
             dgmp_trunc,
-            uᶠs_train,
-            t;
-            rank = rank,
-            truncate_kwargs = truncate_kwargs,
+            ComputationAwareKalman.ts(dgmp_trunc),
+            filter_states_data,
+            t,
         ) for t in ts
     ]
 end

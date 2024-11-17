@@ -7,10 +7,11 @@ function results(config::Dict)
         elseif algorithm == "srkf"
             filter_benchmark = @benchmarkable srkf($dgmp, $mmod, $ys_train, $ts) evals = 1
         elseif algorithm == "enkf"
-            filter_benchmark = @benchmarkable EnsembleKalman.enkf(
-                $dgmp_aug,
+            filter_benchmark = @benchmarkable enkf(
+                $dgmp,
                 $mmod,
-                $ys_train_aug,
+                $ys_train,
+                $ts;
                 rng = Random.seed!($config["seed"]),
                 rank = $(config["rank"]),
             ) evals = 1
