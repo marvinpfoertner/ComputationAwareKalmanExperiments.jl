@@ -67,7 +67,7 @@ function etkf(
     # Interpolate
     return [
         EnsembleKalman.interpolate(
-            dgmp_trunc,
+            dgmp_trunc.gmp,
             ComputationAwareKalman.ts(dgmp_trunc),
             filter_states_data,
             t,
@@ -76,19 +76,19 @@ function etkf(
 end
 
 function cakf(
-    gmc::ComputationAwareKalman.AbstractGaussMarkovChain,
+    dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
     mmod::ComputationAwareKalman.AbstractMeasurementModel,
     ys,
     ts;
     rank::Integer,
 )
     fcache = ComputationAwareKalman.filter(
-        gmc,
+        dgmp,
         mmod,
         ys;
         update_kwargs = (max_iter = rank,),
         truncate_kwargs = (max_cols = rank,),
     )
 
-    return [ComputationAwareKalman.interpolate(gmc, fcache, t) for t in ts]
+    return [ComputationAwareKalman.interpolate(dgmp, fcache, t) for t in ts]
 end
