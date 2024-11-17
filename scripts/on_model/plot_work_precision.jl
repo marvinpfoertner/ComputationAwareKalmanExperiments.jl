@@ -37,6 +37,7 @@ metrics = (
     srkf = dropmissing(df[df.algorithm.=="srkf", [:mse, :expected_nll, :wall_time]]),
     enkf = collect_stochastic_metrics("enkf"),
     etkf = collect_deterministic_metrics("etkf"),
+    etkf_lanczos = collect_stochastic_metrics("etkf_lanczos"),
     cakf = collect_deterministic_metrics("cakf"),
 )
 
@@ -46,9 +47,24 @@ using TuePlots
 
 CairoMakie.activate!(type = "svg")
 
-labels = (kf = "KF", srkf = "SRKF", enkf = "EnKF", etkf = "ETKF", cakf = "CAKF")
-colors = (kf = :violet, srkf = :green, enkf = :orange, etkf = :blue, cakf = :red)
-isstochastic = (kf = false, srkf = false, enkf = true, etkf = false, cakf = false)
+labels = (
+    kf = "KF",
+    srkf = "SRKF",
+    enkf = "EnKF",
+    etkf = "ETKF",
+    etkf_lanczos = "ETKF-L",
+    cakf = "CAKF",
+)
+colors = (
+    kf = :violet,
+    srkf = :green,
+    enkf = :orange,
+    etkf = :blue,
+    etkf_lanczos = :black,
+    cakf = :red,
+)
+isstochastic =
+    (kf = false, srkf = false, enkf = true, etkf = false, etkf_lanczos = true, cakf = false)
 
 function scatter_stochastic_metric!(ax, xs, ys; markersize = 5, alpha = 0.5, kwargs...)
     scatter!(
@@ -67,7 +83,7 @@ function work_precision_plot(;
     xscale = log10,
     mse_scale = identity,
     nll_scale = identity,
-    algorithms = [:enkf, :etkf, :cakf, :kf, :srkf],
+    algorithms = [:enkf, :etkf, :etkf_lanczos, :cakf, :kf, :srkf],
 )
     T = Theme(
         TuePlots.SETTINGS[:AISTATS];
@@ -210,7 +226,7 @@ begin
         abscissa = :rank,
         xlabel = "Rank",
         xscale = log2,
-        algorithms = [:enkf, :etkf, :cakf, :kf],
+        algorithms = [:enkf, :etkf, :etkf_lanczos, :cakf, :kf],
     )
 
     ylims!(plot.axes.nll; nll_lims...)
@@ -225,7 +241,7 @@ begin
         abscissa = :rank,
         xlabel = "Rank",
         xscale = log2,
-        algorithms = [:enkf, :etkf, :cakf, :kf],
+        algorithms = [:enkf, :etkf, :etkf_lanczos, :cakf, :kf],
     )
 
     ylims!(plot.axes.mse, mse_lims_zoom...)

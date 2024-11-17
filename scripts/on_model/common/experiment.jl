@@ -23,6 +23,15 @@ function results(config::Dict)
                 $ts;
                 rank = $(config["rank"]),
             ) evals = 1
+        elseif algorithm == "etkf_lanczos"
+            filter_benchmark = @benchmarkable etkf_lanczos(
+                $dgmp,
+                $mmod,
+                $ys_train,
+                $ts;
+                rng = Random.seed!($config["seed"]),
+                rank = $(config["rank"]),
+            ) evals = 1
         elseif algorithm == "cakf"
             filter_benchmark = @benchmarkable cakf(
                 $dgmp,
@@ -70,7 +79,7 @@ function run_all()
         results(configs[algorithm])
     end
 
-    for algorithm in [:enkf, :etkf, :cakf]
+    for algorithm in [:enkf, :etkf, :etkf_lanczos, :cakf]
         for config in configs[algorithm]
             results(config)
         end

@@ -12,6 +12,10 @@ configs = (
         rank in enkf_ranks, seed in seeds
     ],
     etkf = [Dict("algorithm" => "etkf", "rank" => rank) for rank in etkf_ranks],
+    etkf_lanczos = [
+        Dict("algorithm" => "etkf-lanczos", "rank" => rank, "seed" => seed) for
+        rank in etkf_ranks, seed in seeds
+    ],
     cakf = [Dict("algorithm" => "cakf", "rank" => rank) for rank in cakf_ranks],
 )
 
