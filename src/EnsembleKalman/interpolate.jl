@@ -73,3 +73,31 @@ function interpolate_truncate(
 
     return uᶠₜ
 end
+
+function interpolate_lanczos(
+    dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
+    uᶠs::AbstractVector{<:SquareRootGaussian},
+    t::Real;
+    rng::Random.AbstractRNG,
+    rank::Integer,
+)
+    k = searchsortedlast(ComputationAwareKalman.ts(dgmp), t)
+
+    if k < 1
+        uᶠₜ = initialize_lanczos(dgmp.gmp, t; rng = rng, rank = rank)
+    elseif t == ComputationAwareKalman.ts(dgmp)[k]
+        uᶠₜ = uᶠs[k]
+    else
+        uᶠₜ = predict_lanczos(
+            uᶠs[k],
+            ComputationAwareKalmanExperiments.transition_model(
+                dgmp.gmp,
+                t,
+                ComputationAwareKalman.ts(dgmp)[k],
+            )...;
+            rank = rank,
+        )
+    end
+
+    return uᶠₜ
+end

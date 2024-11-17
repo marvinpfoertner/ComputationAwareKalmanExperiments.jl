@@ -94,42 +94,18 @@ function cakf(
 end
 
 function etkf_lanczos(
-    dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess{
-        <:ComputationAwareKalman.SpatiallyDiscretizedSTSGMP,
-    },
+    gmp::ComputationAwareKalman.AbstractGaussMarkovChain,
     mmod::ComputationAwareKalman.AbstractMeasurementModel,
     ys,
     ts;
     rng::Random.AbstractRNG,
     rank::Integer,
-    truncate_kwargs = (;),
 )
-    # Low-rank approximate the prior covariance matrix
-    gmp_trunc = EnsembleKalman.discretize_truncate_lanczos(
-        dgmp.gmp.stsgmp,
-        dgmp.gmp.X;
-        rng = rng,
-        rank = rank,
-    )
-    dgmp_trunc = ComputationAwareKalman.discretize(gmp_trunc, dgmp.ts)
-
-    # Filter
-    uᶠs = EnsembleKalman.etkf(
-        dgmp_trunc,
-        mmod,
-        ys;
-        rank = rank,
-        truncate_kwargs = truncate_kwargs,
-    )
+    uᶠs_train = EnsembleKalman.etkf_lanczos(gmp, mmod, ys; rng = rng, rank = rank)
 
     # Interpolate
     return [
-        EnsembleKalman.interpolate_truncate(
-            dgmp_trunc,
-            uᶠs,
-            t;
-            rank = rank,
-            truncate_kwargs = truncate_kwargs,
-        ) for t in ts
+        EnsembleKalman.interpolate_lanczos(gmp, uᶠs_train, t; rng = rng, rank = rank) for
+        t in ts
     ]
 end

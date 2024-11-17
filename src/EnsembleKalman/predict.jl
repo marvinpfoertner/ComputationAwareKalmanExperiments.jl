@@ -34,26 +34,24 @@ function predict_lanczos(
     A::AbstractMatrix,
     b::AbstractVector,
     Q::AbstractMatrix;
-    rng::Random.AbstractRNG,
     rank::Integer = size(u.Z, 2),
+    AZ = A * u.Z,
+    initvec = mean(AZ, dims = 2)[:, 1],
 )
     AZ = A * u.Z
 
     # Low-rank approximation of left square root of predictive covariance
-    initvec = randn(rng, size(AZ, 1))
-    # initvec = mean(AZ, dims = 2)[:, 1]
-
     eigvals, eigvecs, _ = KrylovKit.eigsolve(
         x -> AZ * (AZ' * x) + Q * x,
         initvec,
         rank,
         :LM;
         krylovdim = max(KrylovDefaults.krylovdim, rank),
+        maxiter = 1,
         orth = KrylovKit.ClassicalGramSchmidt2(),
         issymmetric = true,
     )
-
-    Z⁻ = hcat(eigvecs...) * Diagonal(sqrt.(eigvals))
+    Z⁻ = hcat(eigvecs...) * Diagonal(sqrt.(max.(0.0, eigvals)))
 
     return SquareRootGaussian(A * u.m + b, Z⁻)
 end

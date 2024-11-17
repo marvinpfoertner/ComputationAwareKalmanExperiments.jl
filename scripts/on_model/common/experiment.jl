@@ -23,7 +23,7 @@ function results(config::Dict)
                 $ts;
                 rank = $(config["rank"]),
             ) evals = 1
-        elseif algorithm == "etkf_lanczos"
+        elseif algorithm == "etkf-lanczos"
             filter_benchmark = @benchmarkable etkf_lanczos(
                 $dgmp,
                 $mmod,

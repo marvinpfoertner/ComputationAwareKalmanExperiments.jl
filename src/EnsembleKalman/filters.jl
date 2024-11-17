@@ -69,3 +69,36 @@ function etkf(
 
     return states
 end
+
+function etkf_lanczos(
+    dgmp::ComputationAwareKalman.AbstractGaussMarkovChain,
+    mmod::ComputationAwareKalman.AbstractMeasurementModel,
+    ys;
+    rng::Random.AbstractRNG,
+    rank::Integer,
+)
+    u₀ = initialize_lanczos(dgmp; rng = rng, rank = rank)
+
+    states = typeof(u₀)[]
+    uₖ₋₁ = u₀
+
+    for (k, yₖ) in enumerate(ys)
+        u⁻ₖ = predict_lanczos(
+            uₖ₋₁,
+            ComputationAwareKalmanExperiments.transition_model(dgmp, k - 1)...;
+            rank = rank,
+        )
+
+        uₖ = update_etkf(
+            u⁻ₖ,
+            yₖ,
+            ComputationAwareKalman.H(mmod, k),
+            ComputationAwareKalman.Λ(mmod, k),
+        )
+
+        push!(states, uₖ)
+        uₖ₋₁ = uₖ
+    end
+
+    return states
+end

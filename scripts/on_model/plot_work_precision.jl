@@ -37,7 +37,7 @@ metrics = (
     srkf = dropmissing(df[df.algorithm.=="srkf", [:mse, :expected_nll, :wall_time]]),
     enkf = collect_stochastic_metrics("enkf"),
     etkf = collect_deterministic_metrics("etkf"),
-    etkf_lanczos = collect_stochastic_metrics("etkf_lanczos"),
+    etkf_lanczos = collect_stochastic_metrics("etkf-lanczos"),
     cakf = collect_deterministic_metrics("cakf"),
 )
 
