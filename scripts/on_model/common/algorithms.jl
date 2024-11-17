@@ -94,18 +94,17 @@ function cakf(
 end
 
 function etkf_lanczos(
-    gmp::ComputationAwareKalman.AbstractGaussMarkovChain,
+    dgmp::ComputationAwareKalman.AbstractGaussMarkovChain,
     mmod::ComputationAwareKalman.AbstractMeasurementModel,
     ys,
     ts;
     rng::Random.AbstractRNG,
     rank::Integer,
 )
-    uᶠs_train = EnsembleKalman.etkf_lanczos(gmp, mmod, ys; rng = rng, rank = rank)
+    uᶠs_data = EnsembleKalman.etkf_lanczos(dgmp, mmod, ys; rng = rng, rank = rank)
 
-    # Interpolate
     return [
-        EnsembleKalman.interpolate_lanczos(gmp, uᶠs_train, t; rng = rng, rank = rank) for
-        t in ts
+        EnsembleKalman.interpolate(dgmp.gmp, ComputationAwareKalman.ts(dgmp), uᶠs_data, t)
+        for t in ts
     ]
 end
