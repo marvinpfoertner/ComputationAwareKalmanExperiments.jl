@@ -1,6 +1,7 @@
 module EnsembleKalman
 
 using ComputationAwareKalman
+using KrylovKit
 using LinearAlgebra
 using Random
 using Statistics
