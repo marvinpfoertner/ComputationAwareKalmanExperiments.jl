@@ -228,6 +228,7 @@ begin
         algorithms = [:enkf, :etkf, :cakf, :kf],
     )
 
+    ylims!(plot.axes.mse, mse_lims_zoom...)
     ylims!(plot.axes.nll; nll_lims_zoom...)
 
     safesave(plotsdir("on_model", "work_precision_rank_zoom_cakf.pdf"), plot.fig)
