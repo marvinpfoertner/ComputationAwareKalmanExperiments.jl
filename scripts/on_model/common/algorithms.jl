@@ -75,6 +75,22 @@ function etkf(
     ]
 end
 
+function etkf_lanczos(
+    dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
+    mmod::ComputationAwareKalman.AbstractMeasurementModel,
+    ys,
+    ts;
+    rng::Random.AbstractRNG,
+    rank::Integer,
+)
+    uᶠs_data = EnsembleKalman.etkf_lanczos(dgmp, mmod, ys; rng = rng, rank = rank)
+
+    return [
+        EnsembleKalman.interpolate(dgmp.gmp, ComputationAwareKalman.ts(dgmp), uᶠs_data, t)
+        for t in ts
+    ]
+end
+
 function cakf(
     dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
     mmod::ComputationAwareKalman.AbstractMeasurementModel,
@@ -91,20 +107,4 @@ function cakf(
     )
 
     return [ComputationAwareKalman.interpolate(dgmp, fcache, t) for t in ts]
-end
-
-function etkf_lanczos(
-    dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
-    mmod::ComputationAwareKalman.AbstractMeasurementModel,
-    ys,
-    ts;
-    rng::Random.AbstractRNG,
-    rank::Integer,
-)
-    uᶠs_data = EnsembleKalman.etkf_lanczos(dgmp, mmod, ys; rng = rng, rank = rank)
-
-    return [
-        EnsembleKalman.interpolate(dgmp.gmp, ComputationAwareKalman.ts(dgmp), uᶠs_data, t)
-        for t in ts
-    ]
 end
