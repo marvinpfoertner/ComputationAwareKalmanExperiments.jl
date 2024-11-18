@@ -83,11 +83,15 @@ function etkf_lanczos(
     rng::Random.AbstractRNG,
     rank::Integer,
 )
-    uᶠs_data = EnsembleKalman.etkf_lanczos(dgmp, mmod, ys; rng = rng, rank = rank)
+    filter_states_data = EnsembleKalman.etkf_lanczos(dgmp, mmod, ys; rng = rng, rank = rank)
 
     return [
-        EnsembleKalman.interpolate(dgmp.gmp, ComputationAwareKalman.ts(dgmp), uᶠs_data, t)
-        for t in ts
+        EnsembleKalman.interpolate(
+            dgmp.gmp,
+            ComputationAwareKalman.ts(dgmp),
+            filter_states_data,
+            t,
+        ) for t in ts
     ]
 end
 
