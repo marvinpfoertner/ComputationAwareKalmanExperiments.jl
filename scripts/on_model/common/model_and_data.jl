@@ -34,10 +34,10 @@ data, _ = produce_or_load(@dict(), datadir("on_model"), prefix = "data") do conf
     rng = Random.seed!(data_seed)
 
     # Sample latent states
-    ustars = rand(rng, gmp, ts)
+    gt_states = rand(rng, gmp, ts)
 
     # Sample measurements
-    ys = [H_all * ustar + sqrt(λ²) * randn(rng, Nₓ) for ustar in ustars]
+    ys = [H_all * gt_state + sqrt(λ²) * randn(rng, Nₓ) for gt_state in gt_states]
 
     # Random subset as training data
     ts_train_idcs = sort!(randperm(rng, Nₜ)[1:Nₜ_train])
@@ -45,12 +45,12 @@ data, _ = produce_or_load(@dict(), datadir("on_model"), prefix = "data") do conf
 
     ys_train = [ys[i][xs_train_idcs] for i in ts_train_idcs]
 
-    return @strdict ustars ys ts_train_idcs xs_train_idcs ys_train
+    return @strdict gt_states ys ts_train_idcs xs_train_idcs ys_train
 end
 
-@unpack ustars, ys, ts_train_idcs, xs_train_idcs, ys_train = data
+@unpack gt_states, ys, ts_train_idcs, xs_train_idcs, ys_train = data
 
-fstars = [H_all * ustar for ustar in ustars]
+fstars = [H_all * gt_state for gt_state in gt_states]
 
 ts_train = ts[ts_train_idcs]
 xs_train = xs[xs_train_idcs]

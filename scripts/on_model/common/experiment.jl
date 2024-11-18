@@ -34,15 +34,21 @@ function results(config::Dict)
         end
 
         # tune!(filter_benchmark)
-        benchmark_trial, uᶠs = BenchmarkTools.run_result(filter_benchmark)
+        benchmark_trial, filter_states = BenchmarkTools.run_result(filter_benchmark)
 
         mse = mean([
-            ComputationAwareKalmanExperiments.mse(ustar, mean(uᶠ)) for
-            (ustar, uᶠ) in zip(ustars, uᶠs)
+            ComputationAwareKalmanExperiments.mse(gt_state, mean(filter_state)) for
+            (gt_state, filter_state) in zip(gt_states, filter_states)
         ])
 
         expected_nll = mean([
-            mean(ComputationAwareKalmanExperiments.gaussian_nll.(ustar, mean(uᶠ), var(uᶠ))) for (ustar, uᶠ) in zip(ustars, uᶠs)
+            mean(
+                ComputationAwareKalmanExperiments.gaussian_nll.(
+                    gt_state,
+                    mean(filter_state),
+                    var(filter_state),
+                ),
+            ) for (gt_state, filter_state) in zip(gt_states, filter_states)
         ])
 
         wall_time = median(benchmark_trial.times) / 1e9
@@ -53,7 +59,7 @@ function results(config::Dict)
             wall_time += lsqrt_wall_time
         end
 
-        return merge((@strdict uᶠs mse expected_nll wall_time), config)
+        return merge((@strdict filter_states mse expected_nll wall_time), config)
     end
 
     return results

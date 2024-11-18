@@ -8,7 +8,7 @@ run_all()
 # Collect metrics
 using DataFrames
 
-df = collect_results(datadir("on_model", "results"), black_list = ["uᶠs"])
+df = collect_results(datadir("on_model", "results"), black_list = ["filter_states"])
 
 function collect_deterministic_metrics(algorithm)
     df_algo =

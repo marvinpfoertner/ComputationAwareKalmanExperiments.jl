@@ -5,8 +5,8 @@ include("common.jl")
 
 using GLMakie
 
-function plot_fstates(uᶠs; gt = true, cred_int = true)
-    uᶠs_plot = [H_all * uᶠ for uᶠ in uᶠs]
+function plot_filter_states(filter_states; gt = true, cred_int = true)
+    filter_states_plot = [H_all * filter_state for filter_state in filter_states]
 
     plot = scatter(ts_train, xs_train, hcat(ys_train...)')
 
@@ -14,11 +14,11 @@ function plot_fstates(uᶠs; gt = true, cred_int = true)
         surface!(ts, xs, hcat(fstars...)', colormap = :coolwarm)
     end
 
-    means = hcat([mean(uᶠ) for uᶠ in uᶠs_plot]...)'
+    means = hcat([mean(filter_state) for filter_state in filter_states_plot]...)'
     surface!(ts, xs, means)
 
     if cred_int
-        stds = hcat([std(uᶠ) for uᶠ in uᶠs_plot]...)'
+        stds = hcat([std(filter_state) for filter_state in filter_states_plot]...)'
         surface!(ts, xs, means .+ 2 * stds, alpha = 0.4)
         surface!(ts, xs, means .- 2 * stds, alpha = 0.4)
     end
@@ -27,5 +27,5 @@ function plot_fstates(uᶠs; gt = true, cred_int = true)
 end
 
 res = results(configs.etkf[5]);
-@unpack uᶠs = res
-plot_fstates(uᶠs; gt = true, cred_int = true)
+@unpack filter_states = res
+plot_filter_states(filter_states; gt = true, cred_int = true)
