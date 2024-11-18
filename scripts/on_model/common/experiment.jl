@@ -60,24 +60,13 @@ function results(config::Dict)
 end
 
 function run_all()
-    # Dense Kalman filters
-    for algorithm in ["kf", "srkf"]
+    for algorithm in [:kf, :srkf]
         results(configs[algorithm])
     end
 
-    # Stochastic algorithms
-    for algorithm in ["enkf"]
-        for rank in keys(configs[algorithm])
-            for config in configs[algorithm][rank]
-                results(config)
-            end
-        end
-    end
-
-    # Deterministic algorithms
-    for algorithm in ["etkf", "cakf"]
-        for rank in keys(configs[algorithm])
-            results(configs[algorithm][rank])
+    for algorithm in [:enkf, :etkf, :cakf]
+        for config in configs[algorithm]
+            results(config)
         end
     end
 end

@@ -1,22 +1,18 @@
-enkf_ranks = 2 .^ (2:9)
+enkf_ranks = 2 .^ (1:9)
 etkf_ranks = 2 .^ (1:9)
 cakf_ranks = 2 .^ (0:9)
+
 seeds = 1:10
 
-configs = Dict(
-    "kf" => Dict("algorithm" => "kf"),
-    "srkf" => Dict("algorithm" => "srkf"),
-    "enkf" => Dict(
-        rank => [
-            Dict("algorithm" => "enkf", "rank" => rank, "seed" => seed) for seed in seeds
-        ] for rank in enkf_ranks
-    ),
-    "etkf" => Dict(
-        rank => Dict("algorithm" => "etkf", "rank" => rank) for rank in etkf_ranks
-    ),
-    "cakf" => Dict(
-        rank => Dict("algorithm" => "cakf", "rank" => rank) for rank in cakf_ranks
-    ),
+configs = (
+    kf = Dict("algorithm" => "kf"),
+    srkf = Dict("algorithm" => "srkf"),
+    enkf = [
+        Dict("algorithm" => "enkf", "rank" => rank, "seed" => seed) for
+        rank in enkf_ranks, seed in seeds
+    ],
+    etkf = [Dict("algorithm" => "etkf", "rank" => rank) for rank in etkf_ranks],
+    cakf = [Dict("algorithm" => "cakf", "rank" => rank) for rank in cakf_ranks],
 )
 
 #####################
