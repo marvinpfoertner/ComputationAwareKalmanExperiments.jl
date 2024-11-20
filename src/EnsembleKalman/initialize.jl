@@ -43,7 +43,8 @@ function initialize_lanczos(
         randn(rng, length(m₀)),
         rank,
         :LM;
-        krylovdim = max(KrylovDefaults.krylovdim, rank),
+        krylovdim = rank,
+        maxiter = 1,
         orth = KrylovKit.ClassicalGramSchmidt2(),
         issymmetric = true,
     )

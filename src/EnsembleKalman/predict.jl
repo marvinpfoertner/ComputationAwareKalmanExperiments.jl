@@ -46,7 +46,7 @@ function predict_lanczos(
         initvec,
         rank,
         :LM;
-        krylovdim = max(KrylovDefaults.krylovdim, rank),
+        krylovdim = rank,
         maxiter = 1,
         orth = KrylovKit.ClassicalGramSchmidt2(),
         issymmetric = true,
