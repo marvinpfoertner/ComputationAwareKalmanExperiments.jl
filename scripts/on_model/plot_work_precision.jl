@@ -195,11 +195,13 @@ function work_precision_plot(;
     end
 end
 
+mse_lims = (low = 1.4, high = 3.3)
 nll_lims = (low = -200.0, high = 3e3)
 
 begin
     plot = work_precision_plot()
 
+    ylims!(plot.axes.mse, mse_lims...)
     ylims!(plot.axes.nll; nll_lims...)
 
     safesave(plotsdir("on_model", "work_precision_wall_time.pdf"), plot.fig)
@@ -229,6 +231,7 @@ begin
         algorithms = [:enkf, :etkf, :etkf_lanczos, :cakf, :kf],
     )
 
+    ylims!(plot.axes.mse, mse_lims...)
     ylims!(plot.axes.nll; nll_lims...)
 
     safesave(plotsdir("on_model", "work_precision_rank.pdf"), plot.fig)

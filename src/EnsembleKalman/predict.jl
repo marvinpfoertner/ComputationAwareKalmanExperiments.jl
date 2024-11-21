@@ -38,20 +38,24 @@ function predict_lanczos(
     AZ = A * u.Z,
     initvec = mean(AZ, dims = 2)[:, 1],
 )
-    AZ = A * u.Z
-
     # Low-rank approximation of left square root of predictive covariance
-    eigvals, eigvecs, _ = KrylovKit.eigsolve(
+    # eigvals, eigvecs, _ = KrylovKit.eigsolve(
+    #     x -> AZ * (AZ' * x) + Q * x,
+    #     initvec,
+    #     rank,
+    #     :LM;
+    #     krylovdim = rank,
+    #     maxiter = 1,
+    #     orth = KrylovKit.ClassicalGramSchmidt2(),
+    #     issymmetric = true,
+    # )
+    # Z⁻ = hcat(eigvecs...) * Diagonal(sqrt.(max.(0.0, eigvals)))
+
+    Z⁻ = ComputationAwareKalmanExperiments.lanczos_lsqrt(
         x -> AZ * (AZ' * x) + Q * x,
-        initvec,
-        rank,
-        :LM;
-        krylovdim = rank,
-        maxiter = 1,
-        orth = KrylovKit.ClassicalGramSchmidt2(),
-        issymmetric = true,
+        initvec;
+        max_iter = rank,
     )
-    Z⁻ = hcat(eigvecs...) * Diagonal(sqrt.(max.(0.0, eigvals)))
 
     return SquareRootGaussian(A * u.m + b, Z⁻)
 end

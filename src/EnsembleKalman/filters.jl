@@ -87,6 +87,7 @@ function etkf_lanczos(
             uₖ₋₁,
             ComputationAwareKalmanExperiments.transition_model(dgmp, k - 1)...;
             rank = rank,
+            # initvec = randn(rng, size(uₖ₋₁.m, 1)),
         )
 
         uₖ = update_etkf(

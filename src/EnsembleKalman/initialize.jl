@@ -38,17 +38,22 @@ function initialize_lanczos(
     Σ₀ = ComputationAwareKalman.Σ(gmc, t)
 
     # Low-rank approximation of left square root of Σ₀
-    eigvals, eigvecs, _ = KrylovKit.eigsolve(
+    # eigvals, eigvecs, _ = KrylovKit.eigsolve(
+    #     x -> Σ₀ * x,
+    #     randn(rng, length(m₀)),
+    #     rank,
+    #     :LM;
+    #     krylovdim = rank,
+    #     maxiter = 1,
+    #     orth = KrylovKit.ClassicalGramSchmidt2(),
+    #     issymmetric = true,
+    # )
+    # Z₀ = hcat(eigvecs...) * Diagonal(sqrt.(eigvals))
+    Z₀ = ComputationAwareKalmanExperiments.lanczos_lsqrt(
         x -> Σ₀ * x,
-        randn(rng, length(m₀)),
-        rank,
-        :LM;
-        krylovdim = rank,
-        maxiter = 1,
-        orth = KrylovKit.ClassicalGramSchmidt2(),
-        issymmetric = true,
+        rand(rng, length(m₀));
+        max_iter = rank,
     )
-    Z₀ = hcat(eigvecs...) * Diagonal(sqrt.(eigvals))
 
     return SquareRootGaussian(m₀, Z₀)
 end
