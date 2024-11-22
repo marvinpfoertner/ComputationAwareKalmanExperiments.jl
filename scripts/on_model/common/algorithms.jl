@@ -41,6 +41,38 @@ function enkf(
     ]
 end
 
+function etkf_sample(
+    dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
+    mmod::ComputationAwareKalman.AbstractMeasurementModel,
+    ys,
+    ts;
+    rng::Random.AbstractRNG,
+    rank::Integer,
+)
+    filter_states_data = EnsembleKalman.etkf(
+        dgmp,
+        mmod,
+        ys;
+        rank = rank,
+        rng = rng,
+        init_state = EnsembleKalman.initialize_sample(dgmp, rank = rank, rng = rng),
+        predict = (uᶠₖ₋₁, k) -> EnsembleKalman.predict_sample_pointwise(
+            uᶠₖ₋₁,
+            ComputationAwareKalman.A_b_lsqrt_Q(dgmp, k - 1)...,
+            rng,
+        ),
+    )
+
+    return [
+        EnsembleKalman.interpolate(
+            dgmp.gmp,
+            ComputationAwareKalman.ts(dgmp),
+            filter_states_data,
+            t,
+        ) for t in ts
+    ]
+end
+
 function etkf_lanczos(
     dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
     mmod::ComputationAwareKalman.AbstractMeasurementModel,

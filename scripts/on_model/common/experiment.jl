@@ -15,6 +15,15 @@ function results(config::Dict)
                 rng = Random.seed!($config["seed"]),
                 rank = $(config["rank"]),
             ) evals = 1
+        elseif algorithm == "etkf-sample"
+            filter_benchmark = @benchmarkable etkf_sample(
+                $dgmp,
+                $mmod,
+                $ys_train,
+                $ts;
+                rng = Random.seed!($config["seed"]),
+                rank = $(config["rank"]),
+            ) evals = 1
         elseif algorithm == "etkf-lanczos"
             filter_benchmark = @benchmarkable etkf_lanczos(
                 $dgmp,
@@ -54,8 +63,8 @@ function results(config::Dict)
 
         wall_time = median(benchmark_trial.times) / 1e9
 
-        if algorithm == "srkf" || algorithm == "enkf"
-            # SRKF and EnKF need access to a square root of the process noise covariance,
+        if algorithm == "srkf" || algorithm == "enkf" || algorithm == "etkf-sample"
+            # SRKF, EnKF, and sample-based ETKF need access to a square root of the process noise covariance,
             # which is precomputed before the filters are run.
             wall_time += lsqrt_wall_time
         end
@@ -67,7 +76,7 @@ function results(config::Dict)
 end
 
 function run_all()
-    for algorithm in [:kf, :srkf, :enkf, :etkf_lanczos, :cakf]
+    for algorithm in [:kf, :srkf, :enkf, :etkf_sample, :etkf_lanczos, :cakf]
         for config in configs[algorithm]
             results(config)
         end

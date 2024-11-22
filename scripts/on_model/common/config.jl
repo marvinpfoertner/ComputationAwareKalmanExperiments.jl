@@ -11,6 +11,10 @@ configs = (
         Dict("algorithm" => "enkf", "rank" => rank, "seed" => seed) for
         rank in sample_ranks, seed in seeds
     ],
+    etkf_sample = [
+        Dict("algorithm" => "etkf-sample", "rank" => rank, "seed" => seed) for
+        rank in sample_ranks, seed in seeds
+    ],
     etkf_lanczos = [
         Dict("algorithm" => "etkf-lanczos", "rank" => rank, "seed" => seed) for
         rank in etkf_lanczos_ranks, seed in seeds
