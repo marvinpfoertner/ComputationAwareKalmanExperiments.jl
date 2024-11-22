@@ -9,7 +9,6 @@ using Statistics
 
 include("matfree/kernel_matrix.jl")
 include("matfree/restriction.jl")
-include("matfree/lanczos.jl")
 
 include("gmp/transition_model.jl")
 include("gmp/kronecker.jl")
