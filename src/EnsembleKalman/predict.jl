@@ -33,7 +33,7 @@ function predict_lanczos(
                     krylovdim = rank,
                     maxiter = 1,
                     tol = 1e-10,
-                    orth = KrylovKit.ModifiedGramSchmidt2,
+                    orth = KrylovKit.ModifiedGramSchmidt2(),
                     eager = false,
                     verbosity = 0,
                 ),
