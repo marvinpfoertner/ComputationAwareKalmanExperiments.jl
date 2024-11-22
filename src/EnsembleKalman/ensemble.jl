@@ -5,6 +5,6 @@ function ensemble_to_gaussian(members::AbstractMatrix)
     return SquareRootGaussian(m, Z)
 end
 
-function ensemble(u::SquareRootGaussian)
+function ensemble_to_gaussian(u::SquareRootGaussian)
     return sqrt(size(u.Z, 2) - 1) * u.Z .+ u.m
 end

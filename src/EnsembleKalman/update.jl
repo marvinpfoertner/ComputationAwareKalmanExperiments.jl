@@ -11,7 +11,7 @@ function update_enkf(
     # This implementation is based on section 4.1 of the paper
     # Carrassi, A., Bocquet, M., Bertino, L., and Evensen, G. "Data assimilation in the geosciences: An overview of methods, issues, and perspectives." WIREs Clim Change. 2018.
 
-    Eᶠ = ensemble(u⁻)  # forecasting ensemble, Eq. 32
+    Eᶠ = ensemble_to_gaussian(u⁻)  # forecasting ensemble, Eq. 32
     N = size(Eᶠ, 2)  # number of ensemble members, Eq. 32
     Xᶠ = u⁻.Z  # forecasting ensemble-anomaly matrix, Eq. 34
 
