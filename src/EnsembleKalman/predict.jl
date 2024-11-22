@@ -12,6 +12,41 @@ function predict_sample_pointwise(
     return SquareRootGaussian(A * u.m + b, A * u.Z + Z_Q)
 end
 
+function predict_lanczos(
+    u::SquareRootGaussian,
+    A::AbstractMatrix,
+    b::AbstractVector,
+    Q::AbstractMatrix;
+    rank::Integer = size(u.Z, 2),
+    AZ = A * u.Z,
+    initvec = mean(AZ, dims = 2)[:, 1],
+    lanczos_kwargs = (;),
+)
+    eigvals, eigvecs, _ = KrylovKit.eigsolve(
+        x -> AZ * (AZ' * x) + Q * x,
+        initvec,
+        rank,
+        :LR,
+        KrylovKit.Lanczos(;
+            merge(
+                (
+                    krylovdim = rank,
+                    maxiter = 1,
+                    tol = 1e-10,
+                    orth = KrylovKit.ModifiedGramSchmidt2,
+                    eager = false,
+                    verbosity = 0,
+                ),
+                lanczos_kwargs,
+            )...,
+        );
+    )
+
+    Z⁻ = hcat(eigvecs...) * Diagonal(sqrt.(max.(0.0, eigvals)))
+
+    return SquareRootGaussian(A * u.m + b, Z⁻)
+end
+
 function predict_truncate(
     u::SquareRootGaussian,
     A::AbstractMatrix,
@@ -24,37 +59,6 @@ function predict_truncate(
         [A * u.Z;; lsqrt_Q];
         max_cols = rank,
         truncate_kwargs...,
-    )
-
-    return SquareRootGaussian(A * u.m + b, Z⁻)
-end
-
-function predict_lanczos(
-    u::SquareRootGaussian,
-    A::AbstractMatrix,
-    b::AbstractVector,
-    Q::AbstractMatrix;
-    rank::Integer = size(u.Z, 2),
-    AZ = A * u.Z,
-    initvec = mean(AZ, dims = 2)[:, 1],
-)
-    # Low-rank approximation of left square root of predictive covariance
-    # eigvals, eigvecs, _ = KrylovKit.eigsolve(
-    #     x -> AZ * (AZ' * x) + Q * x,
-    #     initvec,
-    #     rank,
-    #     :LM;
-    #     krylovdim = rank,
-    #     maxiter = 1,
-    #     orth = KrylovKit.ClassicalGramSchmidt2(),
-    #     issymmetric = true,
-    # )
-    # Z⁻ = hcat(eigvecs...) * Diagonal(sqrt.(max.(0.0, eigvals)))
-
-    Z⁻ = ComputationAwareKalmanExperiments.lanczos_lsqrt(
-        x -> AZ * (AZ' * x) + Q * x,
-        initvec;
-        max_iter = rank,
     )
 
     return SquareRootGaussian(A * u.m + b, Z⁻)

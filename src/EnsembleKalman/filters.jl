@@ -67,6 +67,7 @@ function etkf(
         ComputationAwareKalmanExperiments.transition_model(gmc, k - 1)...;
         rank = rank,
         initvec = randn(rng, size(uᶠₖ₋₁.m, 1)),
+        lanczos_kwargs = lanczos_kwargs,
     ),
 )
     function update(u⁻ₖ, k, yₖ)
