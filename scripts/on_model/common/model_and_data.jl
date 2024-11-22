@@ -14,7 +14,11 @@ xs = LinRange(spatial_domain..., Nₓ)
 
 spatial_cov_mat = ComputationAwareKalman.covariance_matrix(stsgmp.spatial_cov_fn, xs)
 
-lsqrt_benchmark = @benchmarkable sqrt(spatial_cov_mat)
+lsqrt_benchmark = @benchmarkable begin
+    spatial_cov_mat_eigen = eigen(Symmetric($spatial_cov_mat))
+    eigenvals, eigenvecs = spatial_cov_mat_eigen
+    return eigenvecs * Diagonal(sqrt.(eigenvals))
+end
 # tune!(lsqrt_benchmark)
 lsqrt_benchmark_trial, lsqrt_spatial_cov_mat = BenchmarkTools.run_result(lsqrt_benchmark)
 lsqrt_wall_time = median(lsqrt_benchmark_trial.times) / 1e9
