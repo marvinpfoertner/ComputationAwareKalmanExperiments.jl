@@ -1,18 +1,20 @@
-enkf_ranks = 2 .^ (1:9)
-etkf_ranks = 2 .^ (1:9)
+sample_ranks = 2 .^ (1:9)
+etkf_truncate_ranks = 2 .^ (1:9)
 etkf_lanczos_ranks = 2 .^ (0:8)
 cakf_ranks = 2 .^ (0:9)
 
 seeds = 1:10
 
 configs = (
-    kf = Dict("algorithm" => "kf"),
-    srkf = Dict("algorithm" => "srkf"),
+    kf = [Dict("algorithm" => "kf")],
+    srkf = [Dict("algorithm" => "srkf")],
     enkf = [
         Dict("algorithm" => "enkf", "rank" => rank, "seed" => seed) for
-        rank in enkf_ranks, seed in seeds
+        rank in sample_ranks, seed in seeds
     ],
-    etkf = [Dict("algorithm" => "etkf", "rank" => rank) for rank in etkf_ranks],
+    etkf_truncate = [
+        Dict("algorithm" => "etkf-truncate", "rank" => rank) for rank in etkf_truncate_ranks
+    ],
     etkf_lanczos = [
         Dict("algorithm" => "etkf-lanczos", "rank" => rank, "seed" => seed) for
         rank in etkf_lanczos_ranks, seed in seeds

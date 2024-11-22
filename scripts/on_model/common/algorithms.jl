@@ -41,7 +41,7 @@ function enkf(
     ]
 end
 
-function etkf(
+function etkf_truncate(
     dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess{
         <:ComputationAwareKalman.SpatiallyDiscretizedSTSGMP,
     },

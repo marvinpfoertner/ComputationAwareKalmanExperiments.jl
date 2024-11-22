@@ -26,6 +26,6 @@ function plot_filter_states(filter_states; gt = true, cred_int = true)
     return plot
 end
 
-res = results(configs.etkf[5]);
+res = results(configs.etkf_truncate[5]);
 @unpack filter_states = res
 plot_filter_states(filter_states; gt = true, cred_int = true)
