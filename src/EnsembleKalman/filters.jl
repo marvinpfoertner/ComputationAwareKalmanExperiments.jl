@@ -62,13 +62,23 @@ function etkf(
         initvec = randn(rng, ComputationAwareKalman.statedim(gmc)),
         lanczos_kwargs = lanczos_kwargs,
     ),
-    predict = (uᶠₖ₋₁, k) -> predict_lanczos(
-        uᶠₖ₋₁,
-        ComputationAwareKalmanExperiments.transition_model(gmc, k - 1)...;
-        rank = rank,
-        initvec = randn(rng, size(uᶠₖ₋₁.m, 1)),
-        lanczos_kwargs = lanczos_kwargs,
-    ),
+    predict = (uᶠₖ₋₁, k) -> begin
+        A, b, Q = ComputationAwareKalmanExperiments.transition_model(gmc, k - 1)
+        AZ = A * uᶠₖ₋₁.Z
+        initvec =
+            mean(AZ, dims = 2)[:, 1] + sqrt.(diag(Q)) .* randn(rng, size(uᶠₖ₋₁.m, 1))
+
+        predict_lanczos(
+            uᶠₖ₋₁,
+            A,
+            b,
+            Q;
+            rank = rank,
+            AZ = AZ,
+            initvec = initvec,
+            lanczos_kwargs = lanczos_kwargs,
+        )
+    end,
 )
     function update(u⁻ₖ, k, yₖ)
         return update_etkf(
