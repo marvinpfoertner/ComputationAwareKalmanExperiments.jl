@@ -46,20 +46,3 @@ function predict_lanczos(
 
     return SquareRootGaussian(A * u.m + b, Z⁻)
 end
-
-function predict_truncate(
-    u::SquareRootGaussian,
-    A::AbstractMatrix,
-    b::AbstractVector,
-    lsqrt_Q::AbstractMatrix;
-    rank::Integer = size(u.Z, 2),
-    truncate_kwargs = (;),
-)
-    Z⁻, _ = ComputationAwareKalman.truncate(
-        [A * u.Z;; lsqrt_Q];
-        max_cols = rank,
-        truncate_kwargs...,
-    )
-
-    return SquareRootGaussian(A * u.m + b, Z⁻)
-end

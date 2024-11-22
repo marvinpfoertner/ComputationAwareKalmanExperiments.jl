@@ -15,14 +15,6 @@ function results(config::Dict)
                 rng = Random.seed!($config["seed"]),
                 rank = $(config["rank"]),
             ) evals = 1
-        elseif algorithm == "etkf-truncate"
-            filter_benchmark = @benchmarkable etkf_truncate(
-                $dgmp,
-                $mmod,
-                $ys_train,
-                $ts;
-                rank = $(config["rank"]),
-            ) evals = 1
         elseif algorithm == "etkf-lanczos"
             filter_benchmark = @benchmarkable etkf_lanczos(
                 $dgmp,
@@ -75,7 +67,7 @@ function results(config::Dict)
 end
 
 function run_all()
-    for algorithm in [:kf, :srkf, :enkf, :etkf_truncate, :etkf_lanczos, :cakf]
+    for algorithm in [:kf, :srkf, :enkf, :etkf_lanczos, :cakf]
         for config in configs[algorithm]
             results(config)
         end

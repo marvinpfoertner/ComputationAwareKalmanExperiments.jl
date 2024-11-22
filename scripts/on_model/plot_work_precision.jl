@@ -36,7 +36,6 @@ metrics = (
     kf = dropmissing(df[df.algorithm.=="kf", [:mse, :expected_nll, :wall_time]]),
     srkf = dropmissing(df[df.algorithm.=="srkf", [:mse, :expected_nll, :wall_time]]),
     enkf = collect_stochastic_metrics("enkf"),
-    etkf_truncate = collect_deterministic_metrics("etkf-truncate"),
     etkf_lanczos = collect_stochastic_metrics("etkf-lanczos"),
     cakf = collect_deterministic_metrics("cakf"),
 )
@@ -51,7 +50,6 @@ labels = (
     kf = "KF",
     srkf = "SRKF",
     enkf = "EnKF",
-    etkf_truncate = "ETKF-T",
     etkf_lanczos = "ETKF-L",
     cakf = "CAKF",
 )
@@ -59,7 +57,6 @@ colors = (
     kf = :violet,
     srkf = :green,
     enkf = :orange,
-    etkf_truncate = :blue,
     etkf_lanczos = :black,
     cakf = :red,
 )
@@ -67,7 +64,6 @@ isstochastic = (
     kf = false,
     srkf = false,
     enkf = true,
-    etkf_truncate = false,
     etkf_lanczos = true,
     cakf = false,
 )
@@ -89,7 +85,7 @@ function work_precision_plot(;
     xscale = log10,
     mse_scale = identity,
     nll_scale = identity,
-    algorithms = [:enkf, :etkf_truncate, :etkf_lanczos, :cakf, :kf, :srkf],
+    algorithms = [:enkf, :etkf_lanczos, :cakf, :kf, :srkf],
 )
     T = Theme(
         TuePlots.SETTINGS[:AISTATS];
@@ -234,7 +230,7 @@ begin
         abscissa = :rank,
         xlabel = "Rank",
         xscale = log2,
-        algorithms = [:enkf, :etkf_truncate, :etkf_lanczos, :cakf, :kf],
+        algorithms = [:enkf, :etkf_lanczos, :cakf, :kf],
     )
 
     ylims!(plot.axes.mse, mse_lims...)
@@ -250,7 +246,7 @@ begin
         abscissa = :rank,
         xlabel = "Rank",
         xscale = log2,
-        algorithms = [:enkf, :etkf_truncate, :etkf_lanczos, :cakf, :kf],
+        algorithms = [:enkf, :etkf_lanczos, :cakf, :kf],
     )
 
     ylims!(plot.axes.mse, mse_lims_zoom...)

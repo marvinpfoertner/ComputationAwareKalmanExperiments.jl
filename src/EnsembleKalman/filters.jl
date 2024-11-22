@@ -81,36 +81,3 @@ function etkf(
 
     return filter(init_state, predict, update, ys)
 end
-
-function etkf_truncate(
-    gmc::ComputationAwareKalman.AbstractGaussMarkovChain,
-    mmod::ComputationAwareKalman.AbstractMeasurementModel,
-    ys;
-    rank::Integer,
-    truncate_kwargs = (;),
-    init_state::SquareRootGaussian = initialize_truncate(
-        gmc;
-        rank = rank,
-        truncate_kwargs = truncate_kwargs,
-    ),
-)
-    function predict(uᶠₖ₋₁, k)
-        return predict_truncate(
-            uᶠₖ₋₁,
-            ComputationAwareKalman.A_b_lsqrt_Q(gmc, k - 1)...;
-            rank = rank,
-            truncate_kwargs = truncate_kwargs,
-        )
-    end
-
-    function update(u⁻ₖ, k, yₖ)
-        return update_etkf(
-            u⁻ₖ,
-            yₖ,
-            ComputationAwareKalman.H(mmod, k),
-            ComputationAwareKalman.Λ(mmod, k),
-        )
-    end
-
-    return filter(init_state, predict, update, ys)
-end

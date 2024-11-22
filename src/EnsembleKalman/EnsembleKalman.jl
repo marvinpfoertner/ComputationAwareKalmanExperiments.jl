@@ -19,8 +19,6 @@ include("filters.jl")
 
 include("interpolate.jl")
 
-include("truncate.jl")
-
 end
 
 using .EnsembleKalman

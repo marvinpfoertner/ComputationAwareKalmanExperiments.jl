@@ -43,21 +43,3 @@ function initialize_lanczos(
 
     return SquareRootGaussian(ComputationAwareKalman.μ(gmp, t), Zₜ)
 end
-
-function initialize_truncate(
-    gmp::Union{
-        ComputationAwareKalman.AbstractGaussMarkovProcess,
-        ComputationAwareKalman.AbstractGaussMarkovChain,
-    },
-    t::Real = 0;
-    rank::Integer,
-    truncate_kwargs = (;),
-)
-    m₀ = ComputationAwareKalman.μ(gmp, t)
-    Z₀, _ = ComputationAwareKalman.truncate(
-        ComputationAwareKalman.lsqrt_Σ(gmp, t);
-        max_cols = rank,
-        truncate_kwargs...,
-    )
-    return SquareRootGaussian(m₀, Z₀)
-end
