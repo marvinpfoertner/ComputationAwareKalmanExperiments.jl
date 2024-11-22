@@ -55,7 +55,13 @@ function etkf(
     ys;
     rank::Integer,
     rng::Random.AbstractRNG,
-    init_state::SquareRootGaussian = initialize_lanczos(gmc; rng = rng, rank = rank),
+    lanczos_kwargs = (;),
+    init_state::SquareRootGaussian = initialize_lanczos(
+        gmc;
+        rank = rank,
+        initvec = randn(rng, ComputationAwareKalman.statedim(gmc)),
+        lanczos_kwargs = lanczos_kwargs,
+    ),
     predict = (uᶠₖ₋₁, k) -> predict_lanczos(
         uᶠₖ₋₁,
         ComputationAwareKalmanExperiments.transition_model(gmc, k - 1)...;
