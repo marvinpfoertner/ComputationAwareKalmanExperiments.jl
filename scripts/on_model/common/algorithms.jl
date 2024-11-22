@@ -49,7 +49,7 @@ function etkf_lanczos(
     rng::Random.AbstractRNG,
     rank::Integer,
 )
-    filter_states_data = EnsembleKalman.etkf_lanczos(dgmp, mmod, ys; rng = rng, rank = rank)
+    filter_states_data = EnsembleKalman.etkf(dgmp, mmod, ys; rank = rank, rng = rng)
 
     return [
         EnsembleKalman.interpolate(
