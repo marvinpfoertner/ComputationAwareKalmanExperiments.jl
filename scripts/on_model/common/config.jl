@@ -3,7 +3,7 @@ sample_ranks = 2 .^ (1:max_rank)
 etkf_lanczos_ranks = 2 .^ (0:max_rank)
 cakf_ranks = 2 .^ (0:max_rank)
 
-seeds = 1:10
+seeds = 1:5
 
 configs = (
     kf = [Dict("algorithm" => "kf")],
