@@ -1,6 +1,7 @@
-sample_ranks = 2 .^ (1:9)
-etkf_lanczos_ranks = 2 .^ (6:8)
-cakf_ranks = 2 .^ (0:9)
+max_rank = 9
+sample_ranks = 2 .^ (1:max_rank)
+etkf_lanczos_ranks = 2 .^ (0:max_rank)
+cakf_ranks = 2 .^ (0:max_rank)
 
 seeds = 1:10
 
