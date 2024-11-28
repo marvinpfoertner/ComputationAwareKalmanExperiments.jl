@@ -28,7 +28,7 @@ configs = (
 
 # Problem
 temporal_domain = (0.0, 5.0)
-spatial_domain = (-5.0, 5.0)
+spatial_domain = (-10.0, 10.0)
 
 # Dynamics
 matern_order_t = 1
@@ -40,7 +40,7 @@ lₓ = 0.5
 
 # Discretization
 Nₜ = 100
-Nₓ = 1000
+Nₓ = 5000
 
 # Measurement
 λ² = 0.1^2
@@ -49,4 +49,4 @@ Nₓ = 1000
 data_seed = 2345
 
 Nₜ_train = 10
-Nₓ_train = 300
+Nₓ_train = 1500
