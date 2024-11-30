@@ -50,4 +50,4 @@ Nₓ = 5000
 data_seed = 2345
 
 Nₜ_train = 10
-Nₓ_train = 1500
+Nₓ_train = 1000
