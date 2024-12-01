@@ -41,7 +41,7 @@ lₓ = 0.5
 
 # Discretization
 Nₜ = 100
-Nₓ = 20000
+Nₓ = 10000
 
 # Measurement
 λ² = 0.1^2
@@ -50,4 +50,4 @@ Nₓ = 20000
 data_seed = 2345
 
 Nₜ_train = 10
-Nₓ_train = 4000
+Nₓ_train = 1000
