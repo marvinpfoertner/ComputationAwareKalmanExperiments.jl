@@ -1,20 +1,31 @@
+using Adapt
+using CUDA
 using Kronecker
 using LinearAlgebra
 
 # Dynamics model
+struct Matern32
+    l::Float64
+end
+
+function (Σ::Matern32)(x1, x2)
+    r = sqrt(sum((x1 .- x2) .^ 2)) / Σ.l
+    return exp(-sqrt(3) * r) * (1 + sqrt(3) * r)
+end
+
 stsgmp = ComputationAwareKalman.SpaceTimeSeparableGaussMarkovProcess(
     MaternProcess(matern_order_t, lₜ, σ²),
     _ -> zero(Float64),
-    Σₓ,
+    Matern32(lₓ),
 )
 
 # Discretization
 ts = LinRange(temporal_domain..., Nₜ)
-xs = [
-    [x1, x2] for x1 in LinRange(spatial_domain[1]..., Nₓ[1]),
+xs_flat = [
+    (x1, x2) for x1 in LinRange(spatial_domain[1]..., Nₓ[1]),
     x2 in LinRange(spatial_domain[2]..., Nₓ[2])
 ]
-xs_flat = reshape(xs, :)
+xs_flat = reshape(xs_flat, :)
 
 spatial_cov_mat = ComputationAwareKalman.covariance_matrix(stsgmp.spatial_cov_fn, xs_flat)
 
@@ -36,6 +47,18 @@ gmp = ComputationAwareKalman.SpatiallyDiscretizedSTSGMP(
 )
 
 H_all = kronecker(stsgmp.tgmp.H, I(length(xs_flat)))
+
+# Move spatial covariance matrix to GPU
+gmp_dev = ComputationAwareKalman.SpatiallyDiscretizedSTSGMP(
+    stsgmp,
+    xs_flat,
+    ComputationAwareKalman.mean_vector(stsgmp.spatial_mean_fn, xs_flat),
+    CUDA.functional() ? adapt(CuArray, spatial_cov_mat) : spatial_cov_mat,
+    lsqrt_spatial_cov_mat,
+)
+# Compile CUDA kernels
+gmp_dev.spatial_cov_mat * zeros(size(gmp_dev.spatial_cov_mat, 2))
+gmp_dev.spatial_cov_mat * zeros(size(gmp_dev.spatial_cov_mat, 2), 2)
 
 # Data
 data, _ = produce_or_load(@dict(), datadir("on_model"), prefix = "data") do config
@@ -63,9 +86,10 @@ end
 fstars = [H_all * gt_state for gt_state in gt_states]
 
 ts_train = ts[ts_train_idcs]
-xs_train = xs[xs_train_idcs]
+xs_train = xs_flat[xs_train_idcs]
 
 dgmp = ComputationAwareKalman.discretize(gmp, ts_train)
+dgmp_dev = ComputationAwareKalman.discretize(gmp_dev, ts_train)
 
 # Measurement model
 H = kronecker(

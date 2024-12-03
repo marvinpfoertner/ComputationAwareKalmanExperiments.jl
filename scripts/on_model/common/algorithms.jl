@@ -102,13 +102,14 @@ end
 
 function cakf(
     dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
+    dgmp_dev::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
     mmod::ComputationAwareKalman.AbstractMeasurementModel,
     ys,
     ts;
     rank::Integer,
 )
     fcache = ComputationAwareKalman.filter(
-        dgmp,
+        dgmp_dev,
         mmod,
         ys;
         update_kwargs = (max_iter = rank,),

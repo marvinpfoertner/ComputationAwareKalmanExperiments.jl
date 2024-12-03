@@ -36,7 +36,6 @@ lₜ = 0.5
 σ² = 1.0
 
 lₓ = 0.5
-Σₓ = Matern32Kernel() ∘ ScaleTransform(1.0 / lₓ)
 
 # Discretization
 Nₜ = 100

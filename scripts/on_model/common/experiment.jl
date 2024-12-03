@@ -38,6 +38,7 @@ function run_filter(config::Dict)
             elseif algorithm == "cakf"
                 filter_benchmark = @benchmarkable cakf(
                     $dgmp,
+                    $dgmp_dev,
                     $mmod,
                     $ys_train,
                     $ts;
