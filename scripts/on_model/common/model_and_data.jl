@@ -10,9 +10,13 @@ stsgmp = ComputationAwareKalman.SpaceTimeSeparableGaussMarkovProcess(
 
 # Discretization
 ts = LinRange(temporal_domain..., Nₜ)
-xs = LinRange(spatial_domain..., Nₓ)
+xs = [
+    [x1, x2] for x1 in LinRange(spatial_domain[1]..., Nₓ[1]),
+    x2 in LinRange(spatial_domain[2]..., Nₓ[2])
+]
+xs_flat = reshape(xs, :)
 
-spatial_cov_mat = ComputationAwareKalman.covariance_matrix(stsgmp.spatial_cov_fn, xs)
+spatial_cov_mat = ComputationAwareKalman.covariance_matrix(stsgmp.spatial_cov_fn, xs_flat)
 
 lsqrt_benchmark = @benchmarkable begin
     spatial_cov_mat_eigen = eigen(Symmetric($spatial_cov_mat))
@@ -25,13 +29,13 @@ lsqrt_wall_time = median(lsqrt_benchmark_trial.times) / 1e9
 
 gmp = ComputationAwareKalman.SpatiallyDiscretizedSTSGMP(
     stsgmp,
-    xs,
-    ComputationAwareKalman.mean_vector(stsgmp.spatial_mean_fn, xs),
+    xs_flat,
+    ComputationAwareKalman.mean_vector(stsgmp.spatial_mean_fn, xs_flat),
     spatial_cov_mat,
     lsqrt_spatial_cov_mat,
 )
 
-H_all = kronecker(stsgmp.tgmp.H, I(Nₓ))
+H_all = kronecker(stsgmp.tgmp.H, I(length(xs_flat)))
 
 # Data
 data, _ = produce_or_load(@dict(), datadir("on_model"), prefix = "data") do config
@@ -41,11 +45,13 @@ data, _ = produce_or_load(@dict(), datadir("on_model"), prefix = "data") do conf
     gt_states = rand(rng, gmp, ts)
 
     # Sample measurements
-    ys = [H_all * gt_state + sqrt(λ²) * randn(rng, Nₓ) for gt_state in gt_states]
+    ys = [
+        H_all * gt_state + sqrt(λ²) * randn(rng, length(xs_flat)) for gt_state in gt_states
+    ]
 
     # Random subset as training data
     ts_train_idcs = sort!(randperm(rng, Nₜ)[1:Nₜ_train])
-    xs_train_idcs = sort!(randperm(rng, Nₓ)[1:Nₓ_train])
+    xs_train_idcs = sort!(randperm(rng, length(xs_flat))[1:Nₓ_train])
 
     ys_train = [ys[i][xs_train_idcs] for i in ts_train_idcs]
 
@@ -64,7 +70,7 @@ dgmp = ComputationAwareKalman.discretize(gmp, ts_train)
 # Measurement model
 H = kronecker(
     stsgmp.tgmp.H,
-    ComputationAwareKalmanExperiments.RestrictionMatrix(Nₓ, xs_train_idcs),
+    ComputationAwareKalmanExperiments.RestrictionMatrix(length(xs_flat), xs_train_idcs),
 )
 Λ = λ² * I(Nₓ_train)
 
@@ -76,4 +82,3 @@ dgmp_aug = ComputationAwareKalman.discretize(gmp, ts)
 
 ys_train_aug = Vector{Union{eltype(ys_train),Missing}}(missing, length(ts))
 ys_train_aug[ts_train_idcs] = ys_train
-

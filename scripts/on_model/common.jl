@@ -2,7 +2,6 @@ using BenchmarkTools
 using ComputationAwareKalman
 using ComputationAwareKalmanExperiments
 import ComputationAwareKalmanExperiments: Kalman, EnsembleKalman
-using JLD2
 using KernelFunctions
 using Random
 using Statistics
