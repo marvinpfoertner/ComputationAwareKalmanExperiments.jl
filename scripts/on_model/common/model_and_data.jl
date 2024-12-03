@@ -30,9 +30,10 @@ xs_flat = reshape(xs_flat, :)
 spatial_cov_mat = ComputationAwareKalman.covariance_matrix(stsgmp.spatial_cov_fn, xs_flat)
 
 lsqrt_benchmark = @benchmarkable begin
-    spatial_cov_mat_eigen = eigen(Symmetric($spatial_cov_mat))
+    spatial_cov_mat_dev = CUDA.functional() ? CuArray(collect($spatial_cov_mat)) : $spatial_cov_mat
+    spatial_cov_mat_eigen = eigen(Symmetric(spatial_cov_mat_dev))
     eigenvals, eigenvecs = spatial_cov_mat_eigen
-    return eigenvecs * Diagonal(sqrt.(eigenvals))
+    return Array(eigenvecs * Diagonal(sqrt.(eigenvals)))
 end
 # tune!(lsqrt_benchmark)
 lsqrt_benchmark_trial, lsqrt_spatial_cov_mat = BenchmarkTools.run_result(lsqrt_benchmark)
