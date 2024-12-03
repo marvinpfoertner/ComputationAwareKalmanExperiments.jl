@@ -7,6 +7,7 @@ run_all()
 
 # Collect metrics
 using DataFrames
+using Statistics
 
 df = collect_results(datadir("on_model", "results"), black_list = ["filter_states"])
 
