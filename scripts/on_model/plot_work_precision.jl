@@ -9,7 +9,7 @@ run_all()
 using DataFrames
 using Statistics
 
-df = collect_results(datadir("on_model", "results"), black_list = ["filter_states"])
+df = collect_results(datadir("on_model", "results"), rinclude=[r"metrics_algorithm="])
 
 function collect_deterministic_metrics(algorithm)
     df_algo =
