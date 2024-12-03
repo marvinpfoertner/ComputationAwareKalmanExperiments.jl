@@ -76,7 +76,7 @@ function results(config::Dict)
 end
 
 function run_all()
-    for algorithm in [:kf, :srkf, :enkf, :etkf_sample, :etkf_lanczos, :cakf]
+    for algorithm in [:enkf, :etkf_sample, :cakf]
         for config in configs[algorithm]
             results(config)
         end

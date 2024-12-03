@@ -37,7 +37,7 @@ metrics = (
     srkf = dropmissing(df[df.algorithm.=="srkf", [:mse, :expected_nll, :wall_time]]),
     enkf = collect_stochastic_metrics("enkf"),
     etkf_sample = collect_stochastic_metrics("etkf-sample"),
-    etkf_lanczos = collect_stochastic_metrics("etkf-lanczos"),
+    # etkf_lanczos = collect_stochastic_metrics("etkf-lanczos"),
     cakf = collect_deterministic_metrics("cakf"),
 )
 
@@ -89,7 +89,7 @@ function work_precision_plot(;
     xscale = log10,
     mse_scale = identity,
     nll_scale = identity,
-    algorithms = [:enkf, :etkf_sample, :etkf_lanczos, :cakf, :kf, :srkf],
+    algorithms = [:enkf, :etkf_sample, :cakf],
 )
     T = Theme(
         TuePlots.SETTINGS[:AISTATS];
@@ -236,7 +236,7 @@ begin
         abscissa = :rank,
         xlabel = "Rank",
         xscale = log2,
-        algorithms = [:enkf, :etkf_sample, :etkf_lanczos, :cakf, :kf],
+        # algorithms = [:enkf, :etkf_sample, :etkf_lanczos, :cakf, :kf],
     )
 
     ylims!(plot.axes.mse, mse_lims...)
@@ -252,7 +252,7 @@ begin
         abscissa = :rank,
         xlabel = "Rank",
         xscale = log2,
-        algorithms = [:enkf, :etkf_sample, :etkf_lanczos, :cakf, :kf],
+        # algorithms = [:enkf, :etkf_sample, :etkf_lanczos, :cakf, :kf],
     )
 
     ylims!(plot.axes.mse, mse_lims_zoom...)
