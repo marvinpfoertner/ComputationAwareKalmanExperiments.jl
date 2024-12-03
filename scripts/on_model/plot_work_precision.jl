@@ -203,8 +203,8 @@ function work_precision_plot(;
     end
 end
 
-mse_lims = (low = 1.4, high = 3.3)
-nll_lims = (low = -200.0, high = 3e3)
+mse_lims = (low = 1.5, high = 4.0)
+nll_lims = (low = -1000.0, high = 2e4)
 
 begin
     plot = work_precision_plot()
@@ -217,8 +217,8 @@ begin
     plot.fig
 end
 
-mse_lims_zoom = (low = 1.5e0, high = 1.72)
-nll_lims_zoom = (low = 1.24, high = 1.57)
+mse_lims_zoom = (low = 1.58, high = 1.8)
+nll_lims_zoom = (low = 1.26, high = 1.6)
 
 begin
     plot = work_precision_plot()
