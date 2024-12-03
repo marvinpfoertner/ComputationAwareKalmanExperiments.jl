@@ -107,14 +107,14 @@ function work_precision_plot(;
 
         axes = (
             mse = Axis(
-                fig[1, 1],
+                fig[2, 1],
                 xlabel = xlabel,
                 xscale = xscale,
                 ylabel = "MSE",
                 yscale = mse_scale,
             ),
             nll = Axis(
-                fig[2, 1],
+                fig[3, 1],
                 xlabel = xlabel,
                 xscale = xscale,
                 ylabel = "Expected NLL",
@@ -185,13 +185,15 @@ function work_precision_plot(;
             end
         end
 
-        fig[3, 1] = Legend(
+        fig[1, 1] = Legend(
             fig,
             axes.mse;
             nbanks = 3,
             framevisible = false,
             merge = true,
             unique = false,
+            padding = (0.0f0, 0.0f0, 0.0f0, 0.0f0),
+            tellheight = true,
         )
 
         linkxaxes!(axes.mse, axes.nll)
