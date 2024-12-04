@@ -22,13 +22,14 @@ end
 
 function enkf(
     dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
+    dgmp_dev::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
     mmod::ComputationAwareKalman.AbstractMeasurementModel,
     ys,
     ts;
     rng::Random.AbstractRNG,
     rank::Integer,
 )
-    filter_states_data = EnsembleKalman.enkf(dgmp, mmod, ys; rng = rng, rank = rank)
+    filter_states_data = EnsembleKalman.enkf(dgmp_dev, mmod, ys; rng = rng, rank = rank)
 
     # Interpolate
     return [

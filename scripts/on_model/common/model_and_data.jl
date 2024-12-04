@@ -30,14 +30,17 @@ xs_flat = reshape(xs_flat, :)
 spatial_cov_mat = ComputationAwareKalman.covariance_matrix(stsgmp.spatial_cov_fn, xs_flat)
 
 lsqrt_benchmark = @benchmarkable begin
-    spatial_cov_mat_dev = CUDA.functional() ? CuArray(collect($spatial_cov_mat)) : $spatial_cov_mat
-    spatial_cov_mat_eigen = eigen(Symmetric(spatial_cov_mat_dev))
+    spatial_cov_mat = CUDA.functional() ? CuArray(collect($spatial_cov_mat)) : $spatial_cov_mat
+    spatial_cov_mat_eigen = eigen(Symmetric(spatial_cov_mat))
     eigenvals, eigenvecs = spatial_cov_mat_eigen
-    return Array(eigenvecs * Diagonal(sqrt.(eigenvals)))
+    lsqrt_spatial_cov_mat = eigenvecs * Diagonal(sqrt.(eigenvals))
+    return CUDA.functional() ? ComputationAwareKalmanExperiments.WrappedCuArray(lsqrt_spatial_cov_mat) : lsqrt_spatial_cov_mat
 end
 # tune!(lsqrt_benchmark)
-lsqrt_benchmark_trial, lsqrt_spatial_cov_mat = BenchmarkTools.run_result(lsqrt_benchmark)
+lsqrt_benchmark_trial, lsqrt_spatial_cov_mat_dev = BenchmarkTools.run_result(lsqrt_benchmark)
 lsqrt_wall_time = median(lsqrt_benchmark_trial.times) / 1e9
+
+lsqrt_spatial_cov_mat = CUDA.functional() ? Array(lsqrt_spatial_cov_mat_dev.cuA) : lsqrt_spatial_cov_mat_dev
 
 gmp = ComputationAwareKalman.SpatiallyDiscretizedSTSGMP(
     stsgmp,
@@ -55,7 +58,7 @@ gmp_dev = ComputationAwareKalman.SpatiallyDiscretizedSTSGMP(
     xs_flat,
     ComputationAwareKalman.mean_vector(stsgmp.spatial_mean_fn, xs_flat),
     CUDA.functional() ? adapt(CuArray, spatial_cov_mat) : spatial_cov_mat,
-    lsqrt_spatial_cov_mat,
+    lsqrt_spatial_cov_mat_dev,
 )
 # Compile CUDA kernels
 gmp_dev.spatial_cov_mat * zeros(size(gmp_dev.spatial_cov_mat, 2))

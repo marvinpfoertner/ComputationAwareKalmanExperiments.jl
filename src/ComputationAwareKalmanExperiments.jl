@@ -15,6 +15,7 @@ include("gmp/kronecker.jl")
 include("gmp/lti_sde.jl")
 include("gmp/matern.jl")
 
+include("cuda_utils.jl")
 include("gaussians.jl")
 include("metrics.jl")
 include("sphere_utils.jl")

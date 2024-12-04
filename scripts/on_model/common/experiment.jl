@@ -11,6 +11,7 @@ function run_filter(config::Dict)
             elseif algorithm == "enkf"
                 filter_benchmark = @benchmarkable enkf(
                     $dgmp,
+                    $dgmp_dev,
                     $mmod,
                     $ys_train,
                     $ts;
