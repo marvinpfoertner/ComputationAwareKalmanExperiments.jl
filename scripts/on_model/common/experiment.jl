@@ -21,6 +21,7 @@ function run_filter(config::Dict)
             elseif algorithm == "etkf-sample"
                 filter_benchmark = @benchmarkable etkf_sample(
                     $dgmp,
+                    $dgmp_dev,
                     $mmod,
                     $ys_train,
                     $ts;
@@ -30,6 +31,7 @@ function run_filter(config::Dict)
             elseif algorithm == "etkf-lanczos"
                 filter_benchmark = @benchmarkable etkf_lanczos(
                     $dgmp,
+                    $dgmp_dev,
                     $mmod,
                     $ys_train,
                     $ts;
