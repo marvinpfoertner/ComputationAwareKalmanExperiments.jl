@@ -205,10 +205,10 @@ function work_precision_plot(;
 end
 
 mse_lims = (low = 1.5, high = 4.0)
-nll_lims = (low = -1000.0, high = 2e4)
+nll_lims = (low = 5e-1, high = 1e11)
 
 begin
-    plot = work_precision_plot()
+    plot = work_precision_plot(nll_scale=log10)
 
     ylims!(plot.axes.mse, mse_lims...)
     ylims!(plot.axes.nll; nll_lims...)
@@ -218,8 +218,8 @@ begin
     plot.fig
 end
 
-mse_lims_zoom = (low = 1.58, high = 1.8)
-nll_lims_zoom = (low = 1.26, high = 1.6)
+mse_lims_zoom = (low = 1.83, high = 2.05)
+nll_lims_zoom = (low = 1.6, high = 1.9)
 
 begin
     plot = work_precision_plot()
@@ -237,6 +237,7 @@ begin
         abscissa = :rank,
         xlabel = "Rank",
         xscale = log2,
+        nll_scale=log10
         # algorithms = [:enkf, :etkf_sample, :etkf_lanczos, :cakf, :kf],
     )
 
