@@ -1,5 +1,5 @@
-sample_ranks = 2 .^ (1:10)
-etkf_lanczos_ranks = 2 .^ (0:10)
+sample_ranks = 2 .^ (1:11)
+etkf_lanczos_ranks = 2 .^ (0:11)
 cakf_ranks = 2 .^ (0:9)
 
 seeds = 1:5
