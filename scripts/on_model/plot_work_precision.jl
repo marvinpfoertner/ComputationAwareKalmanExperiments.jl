@@ -38,7 +38,7 @@ metrics = (
     srkf = dropmissing(df[df.algorithm.=="srkf", [:mse, :expected_nll, :wall_time]]),
     enkf = collect_stochastic_metrics("enkf"),
     etkf_sample = collect_stochastic_metrics("etkf-sample"),
-    # etkf_lanczos = collect_stochastic_metrics("etkf-lanczos"),
+    etkf_lanczos = collect_stochastic_metrics("etkf-lanczos"),
     cakf = collect_deterministic_metrics("cakf"),
 )
 
@@ -90,7 +90,7 @@ function work_precision_plot(;
     xscale = log10,
     mse_scale = identity,
     nll_scale = identity,
-    algorithms = [:enkf, :etkf_sample, :cakf],
+    algorithms = [:enkf, :etkf_sample, :etkf_lanczos, :cakf],
 )
     T = Theme(
         TuePlots.SETTINGS[:AISTATS];

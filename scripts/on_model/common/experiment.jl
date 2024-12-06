@@ -97,7 +97,7 @@ function compute_metrics(config::Dict)
     return metrics
 end
 
-function run_all(algorithms = [:enkf, :etkf_sample, :cakf])
+function run_all(algorithms = [:enkf, :etkf_sample, :etkf_lanczos, :cakf])
     for algorithm in algorithms
         for config in configs[algorithm]
             compute_metrics(config)
