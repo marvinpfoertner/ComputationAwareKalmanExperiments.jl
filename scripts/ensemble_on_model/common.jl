@@ -1,12 +1,10 @@
 using BenchmarkTools
 using ComputationAwareKalman
 using ComputationAwareKalmanExperiments
-import ComputationAwareKalmanExperiments: Kalman, EnsembleKalman
-using KernelFunctions
+import ComputationAwareKalmanExperiments: Kalman, EnsembleKalman, STSGMP_2D_Matern
 using Random
 using Statistics
 
 include("common/config.jl")
-include("common/model_and_data.jl")
 include("common/algorithms.jl")
 include("common/experiment.jl")
