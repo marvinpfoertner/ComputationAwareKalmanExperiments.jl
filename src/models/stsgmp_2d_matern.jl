@@ -60,8 +60,7 @@ function build_dynamics_model(; parameters...)
             spatial_cov_mat_eigen = eigen(Symmetric(spatial_cov_mat))
             eigenvals, eigenvecs = spatial_cov_mat_eigen
             lsqrt_spatial_cov_mat = eigenvecs * Diagonal(sqrt.(eigenvals))
-            return CUDA.functional() ?
-                   ComputationAwareKalmanExperiments.WrappedCuArray(lsqrt_spatial_cov_mat) : lsqrt_spatial_cov_mat
+            return lsqrt_spatial_cov_mat
         end
         # tune!(lsqrt_benchmark)
         lsqrt_benchmark_trial, lsqrt_spatial_cov_mat_dev =
@@ -93,7 +92,10 @@ function build_dynamics_model(; parameters...)
         xs_flat,
         ComputationAwareKalman.mean_vector(stsgmp.spatial_mean_fn, xs_flat),
         CUDA.functional() ? adapt(CuArray, spatial_cov_mat) : spatial_cov_mat,
-        CUDA.functional() ? adapt(CuArray, lsqrt_spatial_cov_mat) : lsqrt_spatial_cov_mat,
+        CUDA.functional() ?
+        ComputationAwareKalmanExperiments.WrappedCuArray(
+            adapt(CuArray, lsqrt_spatial_cov_mat),
+        ) : lsqrt_spatial_cov_mat,
     )
 
     # Compile CUDA kernels
