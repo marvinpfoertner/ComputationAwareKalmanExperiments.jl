@@ -68,8 +68,7 @@ function build_dynamics_model(; parameters...)
         lsqrt_wall_time = median(lsqrt_benchmark_trial.times) / 1e9
 
         lsqrt_spatial_cov_mat =
-            CUDA.functional() ? Array(lsqrt_spatial_cov_mat_dev.cuA) :
-            lsqrt_spatial_cov_mat_dev
+            CUDA.functional() ? Array(lsqrt_spatial_cov_mat_dev) : lsqrt_spatial_cov_mat_dev
 
         return @strdict(lsqrt_spatial_cov_mat, lsqrt_wall_time)
     end
