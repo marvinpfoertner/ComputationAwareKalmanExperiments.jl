@@ -28,6 +28,43 @@ end
 
 function interpolate(
     dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
+    uᶠs::AbstractVector{<:Gaussian},
+    uˢs::AbstractVector{<:Gaussian},
+    t::Real,
+)
+    k = searchsortedlast(ComputationAwareKalman.ts(dgmp), t)
+
+    if t == ComputationAwareKalman.ts(dgmp)[k]
+        return uˢs[k]
+    end
+
+    uᶠₜ = interpolate(dgmp, uᶠs, t)
+
+    if k >= length(dgmp)
+        return uᶠₜ
+    end
+
+    uˢₖ₊₁ = uˢs[k+1]
+    u⁻ₖ₊₁ = predict(
+        uᶠₜ,
+        ComputationAwareKalmanExperiments.transition_model(
+            dgmp.gmp,
+            ComputationAwareKalman.ts(dgmp)[k+1],
+            t,
+        )...,
+    )
+
+    A₍ₖ₊₁₎ₜ = ComputationAwareKalman.A(dgmp.gmp, ComputationAwareKalman.ts(dgmp)[k+1], t)
+    Kˢₜ = cov(uᶠₜ) * (A₍ₖ₊₁₎ₜ' / cov(u⁻ₖ₊₁))
+
+    mˢₜ = mean(uᶠₜ) + Kˢₜ * (mean(uˢₖ₊₁) - mean(u⁻ₖ₊₁))
+    Pˢₜ = cov(uᶠₜ) + Kˢₜ * (cov(uˢₖ₊₁) - cov(u⁻ₖ₊₁)) * Kˢₜ'
+
+    return Gaussian(mˢₜ, Pˢₜ)
+end
+
+function interpolate(
+    dgmp::ComputationAwareKalman.DiscretizedGaussMarkovProcess,
     uᶠs::AbstractVector{<:SquareRootGaussian},
     t::Real,
 )
