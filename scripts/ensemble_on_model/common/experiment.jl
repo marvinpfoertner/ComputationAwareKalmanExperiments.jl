@@ -1,5 +1,5 @@
 function build_model_and_data(seed::Integer)
-    return STSGMP_2D_Matern.model_and_data(seed + data_seed_offset)
+    return STSGMP_Matern.model_and_data(seed + data_seed_offset)
 end
 
 function run_filter(

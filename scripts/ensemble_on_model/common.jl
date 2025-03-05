@@ -1,7 +1,7 @@
 using BenchmarkTools
 using ComputationAwareKalman
 using ComputationAwareKalmanExperiments
-import ComputationAwareKalmanExperiments: Kalman, EnsembleKalman, STSGMP_2D_Matern
+import ComputationAwareKalmanExperiments: Kalman, EnsembleKalman, STSGMP_Matern
 using Random
 using Statistics
 

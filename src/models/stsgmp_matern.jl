@@ -1,4 +1,4 @@
-module STSGMP_2D_Matern
+module STSGMP_Matern
 
 using Adapt
 using BenchmarkTools
@@ -23,6 +23,7 @@ function build_dynamics_model(; parameters...)
     parameters = merge(
         (
             t_max = 5.0,
+            d_x = 2,
             x_max = 20.0,
             nu_t = 1,
             l_t = 0.5,
@@ -34,7 +35,7 @@ function build_dynamics_model(; parameters...)
         parameters,
     )
 
-    @unpack t_max, x_max, nu_t, l_t, l_x, sigma, N_t, N_x = parameters
+    @unpack t_max, d_x, x_max, nu_t, l_t, l_x, sigma, N_t, N_x = parameters
 
     stsgmp = ComputationAwareKalman.SpaceTimeSeparableGaussMarkovProcess(
         MaternProcess(nu_t, l_t, sigma),
@@ -43,7 +44,8 @@ function build_dynamics_model(; parameters...)
     )
 
     # Discretize spatially
-    xs = [(x1, x2) for x1 in LinRange(0.0, x_max, N_x), x2 in LinRange(0.0, x_max, N_x)]
+    xs_factors = [LinRange(0.0, x_max, N_x) for _ = 1:d_x]
+    xs = collect(Iterators.product(xs_factors...))
     xs_flat = reshape(xs, :)
 
     spatial_cov_mat =
@@ -51,7 +53,7 @@ function build_dynamics_model(; parameters...)
 
     lsqrt_res, _ = produce_or_load(
         parameters,
-        datadir("stsgmp_2d_matern"),
+        datadir("stsgmp_matern"),
         prefix = "lsqrt_spatial_cov_mat",
     ) do config
         lsqrt_benchmark = @benchmarkable begin
@@ -104,7 +106,7 @@ function build_dynamics_model(; parameters...)
     # Temporal discretization
     ts = LinRange(0.0, t_max, N_t)
 
-    return @ntuple(stsgmp, xs, gmp, H, gmp_dev, ts, lsqrt_wall_time)
+    return @ntuple(stsgmp, xs_factors, xs, gmp, H, gmp_dev, ts, lsqrt_wall_time)
 end
 
 function model_and_data(
@@ -127,7 +129,7 @@ function model_and_data(
             dynamics_model_parameters,
             observation_model_parameters,
         ),
-        datadir("stsgmp_2d_matern"),
+        datadir("stsgmp_matern"),
         prefix = "data",
     ) do config
         data_seed = config.seed
@@ -194,4 +196,4 @@ end
 
 end
 
-using .STSGMP_2D_Matern
+using .STSGMP_Matern

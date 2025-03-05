@@ -23,7 +23,7 @@ include("sphere_utils.jl")
 include("Kalman/Kalman.jl")
 include("EnsembleKalman/EnsembleKalman.jl")
 
-include("models/stsgmp_2d_matern.jl")
+include("models/stsgmp_matern.jl")
 
 export MaternProcess
 

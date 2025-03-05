@@ -12,11 +12,10 @@ function plot_filter_states(
     gt = true,
     cred_int = true,
 )
-    @unpack H, ts, xs, ts_train, xs_train, ys_train = model_and_data
+    @unpack H, ts, xs_factors, ts_train, xs_train, ys_train = model_and_data
 
     t = ts[t_idx]
-    x1s = [x[1] for x in xs[:, 1]]
-    x2s = [x[2] for x in xs[1, :]]
+    x1s, x2s = xs_factors
     filter_state_plot = H * filter_states[t_idx]
 
     mean = reshape(Statistics.mean(filter_state_plot), (length(x1s), length(x2s)))
