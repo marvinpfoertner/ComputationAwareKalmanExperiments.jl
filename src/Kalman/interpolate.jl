@@ -34,7 +34,7 @@ function interpolate(
 )
     k = searchsortedlast(ComputationAwareKalman.ts(dgmp), t)
 
-    if t == ComputationAwareKalman.ts(dgmp)[k]
+    if k > 0 && t == ComputationAwareKalman.ts(dgmp)[k]
         return uˢs[k]
     end
 
