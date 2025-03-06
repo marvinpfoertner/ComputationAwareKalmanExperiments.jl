@@ -6,7 +6,7 @@ function rts(
 
     uˢs = [uˢₖ₊₁]
 
-    for (k, uᶠₖ) in enumerate(reverse(uᶠs[1:end-1]))
+    for (k, uᶠₖ) in reverse(collect(enumerate(uᶠs[1:end-1])))
         u⁻ₖ₊₁ = predict(uᶠₖ, ComputationAwareKalmanExperiments.transition_model(dgmp, k)...)
 
         Kˢₖ = cov(uᶠₖ) * (ComputationAwareKalman.A(dgmp, k)' / cov(u⁻ₖ₊₁))
