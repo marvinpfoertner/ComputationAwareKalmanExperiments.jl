@@ -29,7 +29,7 @@ function cakf_caks(
         dgmp_dev,
         mmod,
         ys;
-        update_kwargs = (max_iter = rank,),
+        update_kwargs = (max_iter = rank, abstol = 0.0, reltol = 0.0),
         truncate_kwargs = (max_cols = rank,),
     )
     filter_states = [ComputationAwareKalman.interpolate(dgmp, fcache, t) for t in ts]
