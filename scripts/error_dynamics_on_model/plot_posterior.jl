@@ -6,35 +6,34 @@ include("common.jl")
 using GLMakie
 
 function plot_states(model_and_data, states, t_idx = 1; gt = true, cred_int = true)
-    @unpack H, ts, xs, ts_train, xs_train, ys_train = model_and_data
+    @unpack H, ts, xs_factors, ts_train, xs_train, ys_train = model_and_data
 
-    t = ts[t_idx]
-    x1s = [x[1] for x in xs[:, 1]]
-    x2s = [x[2] for x in xs[1, :]]
-    filter_state_plot = H * states[t_idx]
+    xs, = xs_factors
 
-    mean = reshape(Statistics.mean(filter_state_plot), (length(x1s), length(x2s)))
-    plot = surface(x1s, x2s, mean, axis = (type = Axis3,))
+    states_plot = [H * state for state in states]
+
+    means = hcat([Statistics.mean(state) for state in states_plot]...)'
+    plot = surface(ts, xs, means, axis = (type = Axis3,))
 
     if cred_int
-        std = reshape(Statistics.std(filter_state_plot), (length(x1s), length(x2s)))
-        surface!(x1s, x2s, mean .+ 2 * std, alpha = 0.4)
-        surface!(x1s, x2s, mean .- 2 * std, alpha = 0.4)
+        stds = hcat([std(state) for state in states_plot]...)'
+        surface!(ts, xs, means .+ 2 * stds, alpha = 0.4)
+        surface!(ts, xs, means .- 2 * stds, alpha = 0.4)
     end
 
-    k = searchsortedfirst(ts_train, t)
-    if k <= lastindex(ts_train)
-        scatter!(
-            [Point3f(x1, x2, y) for ((x1, x2), y) in zip(xs_train, ys_train[k])],
-            color = :yellow,
-        )
-    end
+    scatter!(
+        [
+            Point3f(t, x, y) for (t, ys_train_t) in zip(ts_train, ys_train) for
+            ((x,), y) in zip(xs_train, ys_train_t)
+        ],
+        color = :yellow,
+    )
 
     if gt
         @unpack gt_fs = model_and_data
 
-        gt_f = reshape(gt_fs[t_idx], (length(x1s), length(x2s)))
-        surface!(x1s, x2s, gt_f, colormap = :coolwarm)
+        gt_fs = hcat(gt_fs...)'
+        surface!(ts, xs, gt_fs, colormap = :coolwarm)
     end
 
     return plot
@@ -46,5 +45,5 @@ algorithm = :kf_rts
 model_and_data = build_model_and_data(seed)
 res = run_algorithm(seed, algorithm, configs[algorithm][1], model_and_data = model_and_data);
 
-@unpack smoother = res
-plot_filter_states(model_and_data, filter_states, 21; gt = true, cred_int = false)
+@unpack smoother_states = res
+plot_states(model_and_data, smoother_states, 21; gt = true, cred_int = false)
