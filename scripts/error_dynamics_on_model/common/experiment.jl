@@ -58,7 +58,7 @@ function compute_metrics(
         datadir("error_dynamics_on_model"),
         prefix = "metrics",
     ) do config
-        kf_results = run_algorithm(seed, :kf_rts; model_and_data = model_and_data)
+        kf_rts_results = run_algorithm(seed, :kf_rts; model_and_data = model_and_data)
         algorithm_results = run_algorithm(
             seed,
             algorithm,
@@ -66,16 +66,24 @@ function compute_metrics(
             model_and_data = model_and_data,
         )
 
-        rts_states = kf_results.smoother_states
-        @unpack smoother_states = algorithm_results
+        kf_states, rts_states =
+            kf_rts_results.filter_states, kf_rts_results.smoother_states
+        @unpack filter_states, smoother_states = algorithm_results
 
-        mses = [
+        mses_filter = [
+            ComputationAwareKalmanExperiments.mse(mean(kf_state), mean(filter_state)) for (kf_state, filter_state) in zip(kf_states, filter_states)
+        ]
+
+        mses_smoother = [
             ComputationAwareKalmanExperiments.mse(mean(rts_state), mean(smoother_state)) for (rts_state, smoother_state) in zip(rts_states, smoother_states)
         ]
 
         # TODO: Frobenius norm between covariances
 
-        return merge(@strdict(mses), tostringdict(ntuple2dict(config)))
+        return merge(
+            @strdict(mses_filter, mses_smoother),
+            tostringdict(ntuple2dict(config)),
+        )
     end
 
     return dict2ntuple(metrics)
