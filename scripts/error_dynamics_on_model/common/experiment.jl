@@ -9,7 +9,7 @@ end
 function run_algorithm(
     seed::Integer,
     algorithm::Symbol,
-    algorithm_config::NamedTuple;
+    algorithm_config::NamedTuple = (;);
     model_and_data = build_model_and_data(seed),
 )
     @unpack dgmp_train, dgmp_train_dev, mmod, ys_train, ts = model_and_data
@@ -32,6 +32,8 @@ function run_algorithm(
                 ts;
                 rank = config.rank,
             )
+        else
+            error("Unknown algorithm: $algorithm")
         end
 
         return merge(tostringdict(ntuple2dict(states)), tostringdict(ntuple2dict(config)))
@@ -53,7 +55,7 @@ function compute_metrics(
         datadir("error_dynamics_on_model"),
         prefix = "metrics",
     ) do config
-        kf_results = run_algorithm(seed, :kfs, (;); model_and_data = model_and_data)
+        kf_results = run_algorithm(seed, :kf_rts; model_and_data = model_and_data)
         algorithm_results = run_algorithm(
             seed,
             algorithm,
@@ -61,7 +63,7 @@ function compute_metrics(
             model_and_data = model_and_data,
         )
 
-        @unpack rts_states = kf_results
+        rts_states = kf_results.smoother_states
         @unpack smoother_states = algorithm_results
 
         mses = [

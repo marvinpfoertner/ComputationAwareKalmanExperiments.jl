@@ -35,7 +35,7 @@ function cakf_caks(
     filter_states = [ComputationAwareKalman.interpolate(dgmp, fcache, t) for t in ts]
 
     # Smoother
-    scache = ComputationAwareKalman.smoother(
+    scache = ComputationAwareKalman.smooth(
         dgmp_dev,
         fcache;
         truncate_kwargs = (max_cols = rank,),
