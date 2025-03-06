@@ -45,6 +45,10 @@ function run_algorithm(
     return dict2ntuple(results)
 end
 
+function frobenius(P_1, P_2)
+    return sqrt(mean((P_1 .- P_2) .^ 2))
+end
+
 function compute_metrics(
     seed::Integer,
     algorithm::Symbol,
@@ -70,18 +74,31 @@ function compute_metrics(
             kf_rts_results.filter_states, kf_rts_results.smoother_states
         @unpack filter_states, smoother_states = algorithm_results
 
-        mses_filter = [
+        mean_errors_filter = [
             ComputationAwareKalmanExperiments.mse(mean(kf_state), mean(filter_state)) for (kf_state, filter_state) in zip(kf_states, filter_states)
         ]
 
-        mses_smoother = [
+        cov_errors_filter = [
+            frobenius(cov(kf_state), cov(filter_state)) for
+            (kf_state, filter_state) in zip(kf_states, filter_states)
+        ]
+
+        mean_errors_smoother = [
             ComputationAwareKalmanExperiments.mse(mean(rts_state), mean(smoother_state)) for (rts_state, smoother_state) in zip(rts_states, smoother_states)
         ]
 
-        # TODO: Frobenius norm between covariances
+        cov_errors_smoother = [
+            frobenius(cov(rts_state), cov(smoother_state)) for
+            (rts_state, smoother_state) in zip(rts_states, smoother_states)
+        ]
 
         return merge(
-            @strdict(mses_filter, mses_smoother),
+            @strdict(
+                mean_errors_filter,
+                cov_errors_filter,
+                mean_errors_smoother,
+                cov_errors_smoother
+            ),
             tostringdict(ntuple2dict(config)),
         )
     end
