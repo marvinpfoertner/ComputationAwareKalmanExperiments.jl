@@ -78,7 +78,7 @@ function compute_metrics(
     return dict2ntuple(metrics)
 end
 
-function run_all(algorithms = [:kf_rts, :cakf_caks])
+function run_all(algorithms = [:cakf_caks])
     for seed in seeds
         model_and_data = build_model_and_data(seed)
 
