@@ -1,7 +1,7 @@
 function build_model_and_data(seed::Integer)
     return STSGMP_Matern.model_and_data(
         seed + data_seed_offset;
-        dynamics_model_parameters = (d_x = 1, N_t = N_t),
+        dynamics_model_parameters = (t_max = t_max, d_x = 1, N_t = N_t),
         observation_model_parameters = (
             ts_train_idcs = ts_train_idcs,
             N_x_train = N_x_train,
