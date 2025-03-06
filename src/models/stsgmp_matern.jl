@@ -114,10 +114,17 @@ function model_and_data(
     dynamics_model_parameters = (;),
     observation_model_parameters = (;),
 )
-    observation_model_parameters =
-        merge((N_t_train = 10, N_x_train = 400, lambda = 0.1), observation_model_parameters)
+    observation_model_parameters = merge(
+        (ts_train_idcs = missing, N_t_train = 10, N_x_train = 400, lambda = 0.1),
+        observation_model_parameters,
+    )
 
-    @unpack N_t_train, N_x_train, lambda = observation_model_parameters
+    if !ismissing(observation_model_parameters.ts_train_idcs)
+        observation_model_parameters = merge(
+            observation_model_parameters,
+            (N_t_train = length(observation_model_parameters.ts_train_idcs),),
+        )
+    end
 
     model = build_dynamics_model(; dynamics_model_parameters...)
 
@@ -132,6 +139,8 @@ function model_and_data(
         datadir("stsgmp_matern"),
         prefix = "data",
     ) do config
+        @unpack ts_train_idcs, N_t_train, N_x_train, lambda = config
+
         data_seed = config.seed
         rng = Random.seed!(data_seed)
 
@@ -145,12 +154,16 @@ function model_and_data(
         ]
 
         # Random subset as training data
-        ts_train_idcs = sort!(randperm(rng, length(gt_states))[1:N_t_train])
+        if ismissing(ts_train_idcs)
+            ts_train_idcs = sort!(randperm(rng, length(gt_states))[1:N_t_train])
+        end
+
         xs_train_idcs = sort!(randperm(rng, length(ys[1]))[1:N_x_train])
 
         return @strdict(data_seed, gt_states, ts_train_idcs, xs_train_idcs, ys)
     end
 
+    @unpack lambda = observation_model_parameters
     @unpack gt_states, ts_train_idcs, xs_train_idcs, ys = data
 
     gt_fs = [H * gt_state for gt_state in gt_states]
@@ -175,7 +188,7 @@ function model_and_data(
             ),
         ),
         # Λ
-        lambda^2 * I(N_x_train),
+        lambda^2 * I(length(xs_train)),
     )
 
     return merge(
