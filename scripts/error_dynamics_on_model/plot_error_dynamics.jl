@@ -83,7 +83,7 @@ function plot_error_dynamics(; smoother = true)
             ),
             cov = Axis(
                 fig[3, 1],
-                xlabel = "Time",
+                xlabel = L"\text{Time}\ t",
                 xticksvisible = false,
                 xticklabelsvisible = false,
                 xgridvisible = false,
