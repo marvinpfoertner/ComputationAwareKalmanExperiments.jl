@@ -91,7 +91,7 @@ function work_precision_plot(;
                 fig[2, 1],
                 xlabel = xlabel,
                 xscale = xscale,
-                ylabel = "Expected NLL",
+                ylabel = "Average NLPD",
                 yscale = nll_scale,
             ),
         )

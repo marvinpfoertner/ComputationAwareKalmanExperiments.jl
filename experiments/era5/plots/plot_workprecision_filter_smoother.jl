@@ -53,7 +53,7 @@ with_theme(T) do
         ax_nll_filter = Axis(
             fig[2, 2*idx-1],
             xlabel = "Wallclock Time [min]",
-            ylabel = dataset_train_or_test * " NLL",
+            ylabel = dataset_train_or_test * " Average NLPD",
             xticks = xticks_time,
             xscale = xscale_time,
             yscale = yscale_nll,

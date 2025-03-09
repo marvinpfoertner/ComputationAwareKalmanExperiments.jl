@@ -78,7 +78,7 @@ function plot_error_dynamics(; smoother = true)
                 xgridvisible = false,
                 xminorticks = ts_train_idcs,
                 xminorgridvisible = true,
-                ylabel = L"\Vert \mathbf{m}^%$supscript(t) - \hat{\mathbf{m}}^%$supscript(t) \Vert_2",
+                ylabel = L"D^{-\frac{1}{2}} \cdot \Vert \mathbf{m}^%$supscript(t) - \hat{\mathbf{m}}^%$supscript(t) \Vert_2",
                 yscale = log10,
             ),
             cov = Axis(
@@ -89,7 +89,7 @@ function plot_error_dynamics(; smoother = true)
                 xgridvisible = false,
                 xminorticks = ts_train_idcs,
                 xminorgridvisible = true,
-                ylabel = L"\Vert \mathbf{P}^%$supscript(t) - \hat{\mathbf{P}}^%$supscript(t) \Vert_F",
+                ylabel = L"D^{-1} \cdot \Vert \mathbf{P}^%$supscript(t) - \hat{\mathbf{P}}^%$supscript(t) \Vert_F",
                 yscale = log10,
             ),
         )
@@ -116,7 +116,7 @@ function plot_error_dynamics(; smoother = true)
                 lines!(
                     axes.mean,
                     xs,
-                    clamp.(mean_error_traj, 1e-30, Inf),
+                    clamp.(sqrt.(mean_error_traj), 1e-30, Inf),
                     color = colors[rank_idx],
                     alpha = 0.4,
                 )
@@ -133,7 +133,7 @@ function plot_error_dynamics(; smoother = true)
             lines!(
                 axes.mean,
                 xs,
-                clamp.(metrics[rank_idx, mean_errors_median], 1e-30, Inf),
+                clamp.(sqrt.(metrics[rank_idx, mean_errors_median]), 1e-30, Inf),
                 label = "$rank",
                 color = colors[rank_idx],
             )
@@ -159,6 +159,9 @@ function plot_error_dynamics(; smoother = true)
         )
 
         linkxaxes!(axes.mean, axes.cov)
+
+        ylims!(axes.mean; low = 1e-18, high = 1e1)
+        ylims!(axes.cov; low = 1e-18, high = 1e1)
 
         return @ntuple(fig, axes)
     end
