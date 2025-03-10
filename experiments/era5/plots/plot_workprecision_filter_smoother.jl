@@ -175,7 +175,7 @@ with_theme(T) do
             Legend(
                 fig[3, :],
                 ax_mse_filter,
-                "State Space Dimension",
+                "State-Space Dimension",
                 framevisible = false,
                 nbanks = 4,
                 padding = (0.0f0, 0.0f0, 0.0f0, 0.0f0),
