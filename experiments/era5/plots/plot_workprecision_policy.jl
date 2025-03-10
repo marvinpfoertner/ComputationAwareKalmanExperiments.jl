@@ -58,7 +58,7 @@ with_theme(T) do
         ax_nll_filter = Axis(
             fig[2, 2*idx-1];
             xlabel = "Budget [iters/timestep]",
-            ylabel = dataset_train_or_test * " Average NLPD",
+            ylabel = dataset_train_or_test * " Average NLD",
             xscale = xscale_time,
             xticks = xticks_time,
             yscale = yscale_nll,
