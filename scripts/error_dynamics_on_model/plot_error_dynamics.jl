@@ -96,7 +96,7 @@ function plot_error_dynamics(; smoother = true)
 
         xs = 1:N_t
 
-        colors = Makie.wong_colors()
+        colors = ComputationAwareKalmanExperiments.uni_tuebingen_colors
 
         for (rank_idx, rank) in enumerate(metrics.rank)
             if smoother

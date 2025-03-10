@@ -43,7 +43,12 @@ using TuePlots
 CairoMakie.activate!(type = "svg")
 
 labels = (enkf = "EnKF", etkf_sample = "ETKF-S", etkf_lanczos = "ETKF-L", cakf = "CAKF")
-colors = (enkf = :orange, etkf_sample = :darkgray, etkf_lanczos = :black, cakf = :red)
+colors = (
+    enkf = ComputationAwareKalmanExperiments.uni_tuebingen_colors_by_name.gold,
+    etkf_sample = ComputationAwareKalmanExperiments.uni_tuebingen_colors_by_name.lightblue,
+    etkf_lanczos = ComputationAwareKalmanExperiments.uni_tuebingen_colors_by_name.darkgray,
+    cakf = ComputationAwareKalmanExperiments.uni_tuebingen_colors_by_name.red,
+)
 
 function scatter_metric!(ax, xs, ys; markersize = 5, alpha = 0.5, kwargs...)
     scatter!(

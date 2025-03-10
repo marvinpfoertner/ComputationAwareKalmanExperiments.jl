@@ -1,6 +1,7 @@
 #!/usr/bin/env julia
 
 using CairoMakie
+using ComputationAwareKalmanExperiments
 using TuePlots
 
 CairoMakie.activate!(type = "svg")
@@ -14,6 +15,11 @@ T = Theme(
     thinned = true,
     nrows = 3,
     ncols = 4,
+)
+
+T = merge(
+    T,
+    Theme(palette = (color = ComputationAwareKalmanExperiments.uni_tuebingen_colors,)),
 )
 
 include("../common.jl")
