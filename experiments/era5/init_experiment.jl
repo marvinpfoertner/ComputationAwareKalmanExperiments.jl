@@ -10,7 +10,7 @@ config = configs[config_id]
 mkpath(config.results_path)
 
 # Load and downsample data
-data_path = joinpath(@__DIR__, "data", "era5_t2m.nc")
+data_path = joinpath(@__DIR__, "data", "era5_t2m_2022.nc")
 
 era5 = ERA5(
     data_path;

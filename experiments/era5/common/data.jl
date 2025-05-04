@@ -43,7 +43,7 @@ function ERA5(ds_path::String; t_idcs = 1:7*24, step_λ::Integer = 1, step_θ::I
         @assert Nλ_total == length(ds["longitude"])
         @assert Nθ_total == length(ds["latitude"])
 
-        ts = ds["time"][t_idcs]
+        ts = ds["valid_time"][t_idcs]
 
         return (
             Dates.value.(Dates.Hour.(ts .- ts[1])) / 24.0,  # days
