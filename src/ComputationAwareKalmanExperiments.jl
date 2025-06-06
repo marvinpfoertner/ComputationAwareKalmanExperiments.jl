@@ -1,7 +1,6 @@
 module ComputationAwareKalmanExperiments
 
 using ComputationAwareKalman
-using CovarianceFunctions
 using Kronecker
 using LinearAlgebra
 using Random
